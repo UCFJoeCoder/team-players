@@ -10,14 +10,21 @@ import com.ucfjoe.teamplayers.ui.CreateEditGameScreen
 import com.ucfjoe.teamplayers.ui.CreateEditTeamScreen
 import com.ucfjoe.teamplayers.ui.GameDetailsScreen
 import com.ucfjoe.teamplayers.ui.TeamDetailsScreen
-import com.ucfjoe.teamplayers.ui.TeamsScreen
+import com.ucfjoe.teamplayers.ui.teams.TeamsScreen
 
 @Composable
 fun Navigation() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = Screen.TeamsScreen.route) {
+    NavHost(
+        navController = navController,
+        startDestination = Screen.TeamsScreen.route
+    ) {
         composable(route = Screen.TeamsScreen.route) {
-            TeamsScreen(navController = navController)
+            TeamsScreen(
+                onNavigate = {
+                    navController.navigate(it.route)
+                }
+            )
         }
         composable(
             route = Screen.CreateEditTeamScreen.route + "?team_id={team_id}",
@@ -31,9 +38,6 @@ fun Navigation() {
         ) {
             CreateEditTeamScreen(navController, it.arguments?.getString("team_id"))
         }
-//        composable(route = Screen.CreateEditTeamScreen.route) {
-//            CreateEditTeamScreen(navController = navController, null)
-//        }
         composable(route = Screen.TeamDetailsScreen.route) {
             TeamDetailsScreen(navController = navController)
         }

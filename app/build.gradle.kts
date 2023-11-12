@@ -1,3 +1,8 @@
+buildscript {
+    dependencies {
+        classpath("com.google.dagger:hilt-android-gradle-plugin:2.43.2")
+    }
+}
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -88,8 +93,8 @@ dependencies {
     implementation("androidx.room:room-ktx:$room_version")
 
     // Dagger Hilt
-    implementation("com.google.dagger:hilt-android:2.48")
-    kapt("com.google.dagger:hilt-android-compiler:2.48")
+    implementation("com.google.dagger:hilt-android:2.43.2")
+    kapt("com.google.dagger:hilt-android-compiler:2.43.2")
 //    implementation("com.google.dagger:hilt-android:2.38.1")
 //    ksp("com.google.dagger:hilt-android-compiler:2.37")
 //    implementation ("androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03")
