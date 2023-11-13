@@ -5,11 +5,14 @@ import com.ucfjoe.teamplayers.database.relations.TeamWithGames
 import com.ucfjoe.teamplayers.database.relations.TeamWithPlayers
 import kotlinx.coroutines.flow.Flow
 
+
 interface TeamRepository {
 
     suspend fun upsertTeam(team:Team): Long
 
     suspend fun deleteTeam(team: Team)
+
+    suspend fun getTeam(teamId: Long): Team?
 
     fun getTeams(): Flow<List<Team>>
 

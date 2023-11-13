@@ -1,5 +1,6 @@
 package com.ucfjoe.teamplayers.ui.teams
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ucfjoe.teamplayers.Screen
@@ -24,6 +25,11 @@ class TeamsViewModel @Inject constructor(
     fun onEvent(event: TeamsEvent) {
         when(event){
             is TeamsEvent.OnTeamClick -> {
+//                viewModelScope.launch {
+//                    val id = repository.upsertTeam(event.team)
+//                    Log.d("JOE", "Insert... will it work... will we get an ID?")
+//                    Log.d("JOE", "ID: $id")
+//                }
                 sendUiEvent(UiEvent.Navigate(Screen.CreateEditTeamScreen.route + "?team_id=${event.team.id}"))
             }
             is TeamsEvent.OnAddTeamClick -> {

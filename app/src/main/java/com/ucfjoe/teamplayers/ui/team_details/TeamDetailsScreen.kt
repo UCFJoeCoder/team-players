@@ -1,4 +1,4 @@
-package com.ucfjoe.teamplayers.ui
+package com.ucfjoe.teamplayers.ui.team_details
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,7 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ucfjoe.teamplayers.Screen
 
 @Composable
-fun GameDetailsScreen(
+fun TeamDetailsScreen(
     navController: NavController
 ) {
     Column(
@@ -28,23 +28,30 @@ fun GameDetailsScreen(
             .padding(horizontal = 50.dp)
     ) {
         Text(
-            text="Game Details Screen",
+            text="Team Details Screen",
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
         Button(
             onClick = {
-                navController.navigate(Screen.TeamsScreen.route)
-            }//,
-            //modifier = Modifier.align(Alignment.Start)
+                navController.navigate(Screen.CreateEditGameScreen.route)
+            }
         ) {
-            Text(text = "To Teams Screen")
+            Text(text = "To Create Edit Game Screen")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = {
+                navController.popBackStack()
+            }
+        ) {
+            Text(text = "Go Back")
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewGameDetailsScreen() {
-    GameDetailsScreen(rememberNavController())
+fun PreviewTeamDetailsScreen() {
+    TeamDetailsScreen(rememberNavController())
 }

@@ -1,4 +1,4 @@
-package com.ucfjoe.teamplayers.ui
+package com.ucfjoe.teamplayers.ui.add_edit_game
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,9 +18,8 @@ import androidx.navigation.compose.rememberNavController
 import com.ucfjoe.teamplayers.Screen
 
 @Composable
-fun CreateEditTeamScreen(
-    navController: NavController,
-    teamIdString: String?
+fun AddEditGameScreen(
+    navController: NavController
 ) {
     Column(
         verticalArrangement = Arrangement.Center,
@@ -29,49 +28,30 @@ fun CreateEditTeamScreen(
             .padding(horizontal = 50.dp)
     ) {
         Text(
-            text=getTextString(teamIdString),
+            text="Add Edit Game Screen",
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
         Button(
             onClick = {
-                navController.navigate(Screen.TeamDetailsScreen.route)
-            }//,
-            //modifier = Modifier.align(Alignment.Start)
+                navController.navigate(Screen.GameDetailsScreen.route)
+            }
         ) {
-            Text(text = "To Team Details Screen")
+            Text(text = "To Game Details Screen")
         }
-    }
-}
-
-fun getTextString(teamId: String?): String {
-    return if (teamId==null) {
-        "New Team"
-    }
-    else {
-        "Edit Team $teamId"
-    }
-}
-
-private fun isLong(str: String): Boolean {
-    return try {
-        str.toLong()
-        true
-    } catch (e: NumberFormatException) {
-        false
-    }
-}
-
-fun String.toLong(): Long? {
-    return try{
-        toLong()
-    } catch (e: NumberFormatException) {
-        null
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = {
+                navController.popBackStack()
+            }
+        ) {
+            Text(text = "Go Back")
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun Preview() {
-    CreateEditTeamScreen(rememberNavController(),"1")
+fun PreviewAddEditGameScreen() {
+    AddEditGameScreen(rememberNavController())
 }

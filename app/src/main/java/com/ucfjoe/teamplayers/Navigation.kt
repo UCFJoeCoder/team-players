@@ -6,10 +6,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.ucfjoe.teamplayers.ui.CreateEditGameScreen
-import com.ucfjoe.teamplayers.ui.CreateEditTeamScreen
-import com.ucfjoe.teamplayers.ui.GameDetailsScreen
-import com.ucfjoe.teamplayers.ui.TeamDetailsScreen
+import com.ucfjoe.teamplayers.ui.add_edit_game.AddEditGameScreen
+import com.ucfjoe.teamplayers.ui.add_edit_team.AddEditTeamScreen
+import com.ucfjoe.teamplayers.ui.game_details.GameDetailsScreen
+import com.ucfjoe.teamplayers.ui.team_details.TeamDetailsScreen
 import com.ucfjoe.teamplayers.ui.teams.TeamsScreen
 
 @Composable
@@ -36,13 +36,16 @@ fun Navigation() {
                 }
             )
         ) {
-            CreateEditTeamScreen(navController, it.arguments?.getString("team_id"))
+            AddEditTeamScreen(onPopBackStack = {
+                navController.popBackStack()
+            })
+            //AddEditTeamScreen(navController, it.arguments?.getString("team_id"))
         }
         composable(route = Screen.TeamDetailsScreen.route) {
             TeamDetailsScreen(navController = navController)
         }
         composable(route = Screen.CreateEditGameScreen.route) {
-            CreateEditGameScreen(navController = navController)
+            AddEditGameScreen(navController = navController)
         }
         composable(route = Screen.GameDetailsScreen.route) {
             GameDetailsScreen(navController = navController)

@@ -31,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ucfjoe.teamplayers.R
+import com.ucfjoe.teamplayers.database.entity.Team
 import com.ucfjoe.teamplayers.ui.UiEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,24 +39,20 @@ import com.ucfjoe.teamplayers.ui.UiEvent
 fun TeamsScreen(
     onNavigate: (UiEvent.Navigate) -> Unit,
     viewModel: TeamsViewModel = hiltViewModel()
-//    ,
-//    modifier:Modifier = Modifier.fillMaxSize()
-    //,
-    //state: DatabaseState,
-    //onEvent: (TeamEvent) -> Unit
 ) {
     val teams = viewModel.teams.collectAsState(initial = emptyList())
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(key1 = true){
-        viewModel.uiEvent.collect {event ->
-            when(event){
+    LaunchedEffect(key1 = true) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
                 is UiEvent.ShowSnackbar -> {
-                    // TODO() remove if this is not going to be used
+                    // TODO("remove if this is not going to be used")
                     val result = snackbarHostState.showSnackbar(
                         message = event.message,
                         actionLabel = event.action
                     )
                 }
+
                 is UiEvent.Navigate -> onNavigate(event)
                 else -> Unit
             }
@@ -86,7 +83,10 @@ fun TeamsScreen(
 //            Team( "Tigers", 4L)
 //        )
 
-        Column(modifier = Modifier.fillMaxWidth())
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxWidth())
         {
             Text(
                 text = "Team Players",
@@ -101,41 +101,32 @@ fun TeamsScreen(
                 style = MaterialTheme.typography.titleLarge
             )
             Divider()
-        }
-
-        LazyColumn(
-            contentPadding = padding,
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(teams.value) { team ->
-                TeamItem(
-                    team,
-                    onEvent = viewModel::onEvent,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            viewModel.onEvent(TeamsEvent.OnTeamClick(team))
-                        }
-                        .padding(16.dp)
-                )
+            LazyColumn(
+                contentPadding = padding,
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                items(teams.value) { team ->
+                    TeamItem(
+                        team,
+                        onEvent = viewModel::onEvent,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                viewModel.onEvent(TeamsEvent.OnTeamClick(team))
+                            }
+                            .padding(16.dp, 0.dp)
+                    )
+                }
             }
-//            for (team in teams) {
-//                item {
-//                    TeamItem(team, navController)
-//                }
-//            }
         }
     }
 }
 
 
-
+// TODO() try to get the preview to work with dependency injection
 @Preview(showBackground = true)
 @Composable
 fun TeamScreenPreview() {
-    TeamsScreen(onNavigate = {  })
-//    TeamsScreen(state = DatabaseState(), onEvent = {
-//
-//    })
+    TeamsScreen(onNavigate = { })
 }

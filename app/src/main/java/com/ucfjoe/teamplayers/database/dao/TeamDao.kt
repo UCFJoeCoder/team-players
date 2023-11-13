@@ -23,14 +23,17 @@ interface TeamDao {
     @Delete
     suspend fun deleteTeam(team: Team)
 
-    @Query("SELECT * FROM teams ORDER BY name ASC")
+    @Query("SELECT * FROM teams WHERE id=:teamId")
+    suspend fun getTeam(teamId: Long): Team?
+
+    @Query("SELECT * FROM teams ORDER BY UPPER(name) ASC")
     fun getTeams(): Flow<List<Team>>
 
     @Transaction
     @Query("SELECT * FROM teams WHERE id=:teamId")
-    fun getTeamWithGames(teamId:Long): Flow<List<TeamWithGames>>
+    fun getTeamWithGames(teamId: Long): Flow<List<TeamWithGames>>
 
     @Transaction
     @Query("SELECT * FROM teams WHERE id=:teamId")
-    fun getTeamWithPlayers(teamId:Long): Flow<List<TeamWithPlayers>>
+    fun getTeamWithPlayers(teamId: Long): Flow<List<TeamWithPlayers>>
 }

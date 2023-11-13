@@ -5,8 +5,9 @@ import com.ucfjoe.teamplayers.database.entity.Team
 import com.ucfjoe.teamplayers.database.relations.TeamWithGames
 import com.ucfjoe.teamplayers.database.relations.TeamWithPlayers
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class TeamRepositoryImpl(
+class TeamRepositoryImpl @Inject constructor(
     private val teamDao: TeamDao
 ): TeamRepository {
 
@@ -16,6 +17,10 @@ class TeamRepositoryImpl(
 
     override suspend fun deleteTeam(team: Team) {
         teamDao.deleteTeam(team)
+    }
+
+    override suspend fun getTeam(teamId: Long): Team? {
+        return teamDao.getTeam(teamId)
     }
 
     override fun getTeams(): Flow<List<Team>> {
