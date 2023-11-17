@@ -36,9 +36,10 @@ fun Navigation() {
                 }
             )
         ) {
-            AddEditTeamScreen(onPopBackStack = {
-                navController.popBackStack()
-            })
+            AddEditTeamScreen(
+                onPopBackStack = { navController.popBackStack() },
+                onNavigate = { navController.navigate(it.route) }
+            )
             //AddEditTeamScreen(navController, it.arguments?.getString("team_id"))
         }
         composable(route = Screen.TeamDetailsScreen.route) {

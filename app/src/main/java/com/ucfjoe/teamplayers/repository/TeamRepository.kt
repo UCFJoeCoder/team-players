@@ -16,7 +16,9 @@ interface TeamRepository {
 
     fun getTeams(): Flow<List<Team>>
 
+    suspend fun getTeamsWithName(name: String): Int
+
     fun getTeamWithGames(teamId: Long): Flow<List<TeamWithGames>>
 
-    fun getTeamWithPlayers(teamId: Long): Flow<List<TeamWithPlayers>>
+    suspend fun getTeamWithPlayers(teamId: Long): List<TeamWithPlayers>
 }

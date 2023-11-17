@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface PlayerDao {
 
     @Upsert
-    suspend fun upsertPlayer(player: Player)
+    suspend fun upsertPlayer(player: Player): Long
 
     @Delete
     suspend fun deletePlayer(player: Player)

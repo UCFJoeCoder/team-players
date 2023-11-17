@@ -17,9 +17,6 @@ interface TeamDao {
     @Upsert
     suspend fun upsertTeam(team: Team): Long
 
-    @Insert
-    suspend fun insertTeam(team: Team): Long
-
     @Delete
     suspend fun deleteTeam(team: Team)
 
@@ -29,11 +26,14 @@ interface TeamDao {
     @Query("SELECT * FROM teams ORDER BY UPPER(name) ASC")
     fun getTeams(): Flow<List<Team>>
 
+    @Query("SELECT COUNT(*) FROM teams where UPPER(name)=UPPER(:name)")
+    suspend fun getTeamsWithName(name: String): Int
+
     @Transaction
     @Query("SELECT * FROM teams WHERE id=:teamId")
     fun getTeamWithGames(teamId: Long): Flow<List<TeamWithGames>>
 
     @Transaction
     @Query("SELECT * FROM teams WHERE id=:teamId")
-    fun getTeamWithPlayers(teamId: Long): Flow<List<TeamWithPlayers>>
+    fun getTeamWithPlayers(teamId: Long): List<TeamWithPlayers>
 }
