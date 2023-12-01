@@ -14,4 +14,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "TeamPlayers"
-include(":app")
+include(":teamPlayers")
