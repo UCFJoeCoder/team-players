@@ -3,12 +3,14 @@ package com.ucfjoe.teamplayers.data.repository
 import com.ucfjoe.teamplayers.data.local.dao.TeamDao
 import com.ucfjoe.teamplayers.data.local.toTeam
 import com.ucfjoe.teamplayers.data.local.toTeamEntity
-import com.ucfjoe.teamplayers.data.relations.TeamWithGames
-import com.ucfjoe.teamplayers.data.relations.TeamWithPlayers
+import com.ucfjoe.teamplayers.data.local.toTeamWithGames
+import com.ucfjoe.teamplayers.data.local.toTeamWithPlayers
 import com.ucfjoe.teamplayers.domain.model.Team
+import com.ucfjoe.teamplayers.domain.model.TeamWithGames
+import com.ucfjoe.teamplayers.domain.model.TeamWithPlayers
 import com.ucfjoe.teamplayers.domain.repository.TeamRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class TeamRepositoryImpl @Inject constructor(
@@ -28,18 +30,22 @@ class TeamRepositoryImpl @Inject constructor(
     }
 
     override fun getTeams(): Flow<List<Team>> {
-        return flow { teamDao.getTeams().map { it.toTeam() } }
+        return teamDao.getTeams().map { list -> list.map { it.toTeam() } }
     }
 
     override suspend fun getTeamsWithName(name: String): Int {
         return teamDao.getTeamsWithName(name)
     }
 
-    override fun getTeamWithGames(teamId: Long): Flow<List<TeamWithGames>> {
-        return flow { teamDao.getTeamWithGames(teamId) }
+    override suspend fun getTeamsWithNameCaseSensitive(name: String): Int {
+        return teamDao.getTeamsWithNameCaseSensitive(name)
     }
 
-    override suspend fun getTeamWithPlayers(teamId: Long): List<TeamWithPlayers> {
-        return teamDao.getTeamWithPlayers(teamId)
+    override fun getTeamWithGames(teamId: Long): Flow<TeamWithGames> {
+        return teamDao.getTeamWithGames(teamId).map { it.toTeamWithGames() }
+    }
+
+    override fun getTeamWithPlayers(teamId: Long): Flow<TeamWithPlayers> {
+        return teamDao.getTeamWithPlayers(teamId).map { it.toTeamWithPlayers() }
     }
 }

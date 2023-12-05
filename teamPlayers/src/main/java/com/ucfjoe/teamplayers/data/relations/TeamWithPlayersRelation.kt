@@ -5,12 +5,12 @@ import androidx.room.Relation
 import com.ucfjoe.teamplayers.data.local.entity.PlayerEntity
 import com.ucfjoe.teamplayers.data.local.entity.TeamEntity
 
-data class TeamWithPlayers(
+data class TeamWithPlayersRelation(
     @Embedded val team: TeamEntity,
     @Relation(
         parentColumn = "id",
         entityColumn = "team_id",
         entity = PlayerEntity::class
     )
-    val players: List<PlayerEntity>? = null
+    val players: List<PlayerEntity> = emptyList()
 )

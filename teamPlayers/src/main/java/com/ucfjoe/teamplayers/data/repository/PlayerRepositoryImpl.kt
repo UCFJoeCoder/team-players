@@ -6,7 +6,7 @@ import com.ucfjoe.teamplayers.data.local.toPlayerEntity
 import com.ucfjoe.teamplayers.domain.model.Player
 import com.ucfjoe.teamplayers.domain.repository.PlayerRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class PlayerRepositoryImpl @Inject constructor(
@@ -25,6 +25,6 @@ class PlayerRepositoryImpl @Inject constructor(
     }
 
     override fun getTeamPlayers(teamId: Long): Flow<List<Player>> {
-        return flow { playerDao.getTeamPlayers(teamId).map { it.toPlayer() } }
+        return playerDao.getTeamPlayers(teamId).map { list -> list.map { it.toPlayer() } }
     }
 }

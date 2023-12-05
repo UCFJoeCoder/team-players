@@ -8,6 +8,5 @@ sealed class AddEditTeamEvent {
     data class OnPlayersChanged(val players: String) : AddEditTeamEvent()
     object OnPlayersChangedDone : AddEditTeamEvent()
     object OnSaveTeamClick : AddEditTeamEvent()
-    object OnDeleteTeamClick : AddEditTeamEvent()
     data class OnDeletePlayerClick(val player: Player) : AddEditTeamEvent()
 }

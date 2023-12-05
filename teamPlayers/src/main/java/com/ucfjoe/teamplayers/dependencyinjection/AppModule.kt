@@ -3,10 +3,14 @@ package com.ucfjoe.teamplayers.dependencyinjection
 import android.content.Context
 import androidx.room.Room
 import com.ucfjoe.teamplayers.data.TeamPlayersDatabase
-import com.ucfjoe.teamplayers.domain.repository.PlayerRepository
+import com.ucfjoe.teamplayers.data.repository.GamePlayerRepositoryImpl
+import com.ucfjoe.teamplayers.data.repository.GameRepositoryImpl
 import com.ucfjoe.teamplayers.data.repository.PlayerRepositoryImpl
-import com.ucfjoe.teamplayers.domain.repository.TeamRepository
 import com.ucfjoe.teamplayers.data.repository.TeamRepositoryImpl
+import com.ucfjoe.teamplayers.domain.repository.GamePlayerRepository
+import com.ucfjoe.teamplayers.domain.repository.GameRepository
+import com.ucfjoe.teamplayers.domain.repository.PlayerRepository
+import com.ucfjoe.teamplayers.domain.repository.TeamRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,5 +42,17 @@ object AppModule {
     @Singleton
     fun providePlayerRepository(db: TeamPlayersDatabase): PlayerRepository {
         return PlayerRepositoryImpl(db.playerDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGameRepository(db: TeamPlayersDatabase): GameRepository {
+        return GameRepositoryImpl(db.gameDao)
+    }
+
+    @Provides
+    @Singleton
+    fun providesGamePlayerRepository(db: TeamPlayersDatabase): GamePlayerRepository {
+        return GamePlayerRepositoryImpl(db.gamePlayerDao)
     }
 }

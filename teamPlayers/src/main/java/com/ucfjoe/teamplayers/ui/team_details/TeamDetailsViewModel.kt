@@ -1,0 +1,74 @@
+package com.ucfjoe.teamplayers.ui.team_details
+
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.ucfjoe.teamplayers.Screen
+import com.ucfjoe.teamplayers.domain.repository.TeamRepository
+import com.ucfjoe.teamplayers.domain.repository.GameRepository
+import com.ucfjoe.teamplayers.ui.UiEvent
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class TeamDetailsViewModel @Inject constructor(
+    private val teamRepository: TeamRepository,
+    private val gameRepository: GameRepository,
+    savedStateHandle: SavedStateHandle
+) : ViewModel() {
+
+    private val _state = mutableStateOf(TeamDetailsState())
+    val state: State<TeamDetailsState> = _state
+
+    private val _uiEvent = Channel<UiEvent>()
+    val uiEvent = _uiEvent.receiveAsFlow()
+
+    init {
+        val paramTeamId: String? = savedStateHandle["team_id"]
+        paramTeamId?.toLong()?.let { teamId ->
+            viewModelScope.launch {
+                teamRepository.getTeamWithGames(teamId).onEach {
+                    _state.value = state.value.copy(team = it.team, games = it.games)
+                }.launchIn(viewModelScope)
+            }
+        }
+    }
+
+    fun onEvent(event: TeamDetailsEvent) {
+        when (event) {
+            is TeamDetailsEvent.OnAddGameClick -> {
+                sendUiEvent(UiEvent.Navigate(Screen.AddEditGameScreen.route + "?team_id=${event.teamId}"))
+            }
+
+            is TeamDetailsEvent.OnGameClick -> {
+                val screen =
+                    if (state.value.isEditMode) Screen.AddEditGameScreen else Screen.GameDetailsScreen
+                sendUiEvent(UiEvent.Navigate(screen.route + "?team_id=${event.game.teamId}&game_id=${event.game.id}"))
+            }
+
+            is TeamDetailsEvent.OnToggleEditMode -> {
+                _state.value = state.value.copy(isEditMode = !state.value.isEditMode)
+            }
+
+            is TeamDetailsEvent.OnDeleteClick -> {
+                viewModelScope.launch {
+                    gameRepository.deleteGame(event.game)
+                }
+            }
+        }
+    }
+
+    private fun sendUiEvent(event: UiEvent) {
+        viewModelScope.launch {
+            _uiEvent.send(event)
+        }
+    }
+
+}

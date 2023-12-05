@@ -17,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TeamsViewModel @Inject constructor(
-    private val repository: TeamRepository
+    private val teamRepository: TeamRepository
 ) : ViewModel() {
 
     private val _state = mutableStateOf(TeamsState())
@@ -29,7 +29,7 @@ class TeamsViewModel @Inject constructor(
 
     private fun loadTeams() {
         viewModelScope.launch() {
-            repository.getTeams().onEach { teams ->
+            teamRepository.getTeams().onEach { teams ->
                 _state.value = state.value.copy(teams = teams)
             }.launchIn(viewModelScope)
         }
@@ -40,12 +40,24 @@ class TeamsViewModel @Inject constructor(
 
     fun onEvent(event: TeamsEvent) {
         when (event) {
-            is TeamsEvent.OnTeamClick -> {
-                sendUiEvent(UiEvent.Navigate(Screen.CreateEditTeamScreen.route + "?team_id=${event.team.id}"))
+            is TeamsEvent.OnAddTeamClick -> {
+                sendUiEvent(UiEvent.Navigate(Screen.AddEditTeamScreen.route))
             }
 
-            is TeamsEvent.OnAddTeamClick -> {
-                sendUiEvent(UiEvent.Navigate(Screen.CreateEditTeamScreen.route))
+            is TeamsEvent.OnTeamClick -> {
+                val screen =
+                    if (state.value.isEditMode) Screen.AddEditTeamScreen else Screen.TeamDetailsScreen
+                sendUiEvent(UiEvent.Navigate(screen.route + "?team_id=${event.team.id}"))
+            }
+
+            is TeamsEvent.OnToggleEditMode -> {
+                _state.value = state.value.copy(isEditMode = !state.value.isEditMode)
+            }
+
+            is TeamsEvent.OnDeleteClick -> {
+                viewModelScope.launch {
+                    teamRepository.deleteTeam(event.team)
+                }
             }
         }
     }

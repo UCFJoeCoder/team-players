@@ -1,10 +1,9 @@
 package com.ucfjoe.teamplayers.domain.repository
 
-import com.ucfjoe.teamplayers.data.relations.TeamWithGames
-import com.ucfjoe.teamplayers.data.relations.TeamWithPlayers
 import com.ucfjoe.teamplayers.domain.model.Team
+import com.ucfjoe.teamplayers.domain.model.TeamWithGames
+import com.ucfjoe.teamplayers.domain.model.TeamWithPlayers
 import kotlinx.coroutines.flow.Flow
-
 
 interface TeamRepository {
 
@@ -18,7 +17,9 @@ interface TeamRepository {
 
     suspend fun getTeamsWithName(name: String): Int
 
-    fun getTeamWithGames(teamId: Long): Flow<List<TeamWithGames>>
+    suspend fun getTeamsWithNameCaseSensitive(name: String): Int
 
-    suspend fun getTeamWithPlayers(teamId: Long): List<TeamWithPlayers>
+    fun getTeamWithGames(teamId: Long): Flow<TeamWithGames>
+
+    fun getTeamWithPlayers(teamId: Long): Flow<TeamWithPlayers>
 }
