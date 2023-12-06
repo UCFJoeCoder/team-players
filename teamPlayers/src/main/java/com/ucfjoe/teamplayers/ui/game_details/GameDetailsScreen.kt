@@ -15,9 +15,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -27,14 +26,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -56,26 +51,47 @@ fun GameDetailsScreen(
     if (gameDetailsState.askToImportCurrentPlayer) {
         ConfirmDialog(
             dialogTitle = "Import Players",
-            dialogText = "This game does not have any players. Would you like to import the current players from the team?",
-            onConfirmRequest = { onEvent(GameDetailsEvent.OnImportPlayersRequest) },
-            onDismissRequest = { onEvent(GameDetailsEvent.OnDismissImportDialog) }
+            dialogText = getRequestImportPlayersMessage(gameDetailsState.players.isEmpty()),
+            onConfirmRequest = {
+                onEvent(GameDetailsEvent.OnDismissImportDialog)
+                onEvent(GameDetailsEvent.OnImportPlayers)
+            },
+            onDismissRequest = { onEvent(GameDetailsEvent.OnDismissImportDialog) },
+            icon = if (gameDetailsState.players.isNotEmpty()) Icons.Default.Warning else null
         )
     }
-    var showShareGameResultsDialog by remember { mutableStateOf(false) }
-    if (showShareGameResultsDialog) {
+    if (gameDetailsState.showShareGameDetailsDialog) {
         ConfirmDialog(
             dialogTitle = "Share Game Results",
             dialogText = "This feature is not implemented yet",
-            onConfirmRequest = { showShareGameResultsDialog = false },
-            onDismissRequest = { showShareGameResultsDialog = false })
+            onConfirmRequest = { onEvent(GameDetailsEvent.OnHideShareGameResults) },
+            onDismissRequest = { onEvent(GameDetailsEvent.OnHideShareGameResults) })
+    }
+    if (gameDetailsState.showRequestClearCountDialog) {
+        ConfirmDialog(
+            dialogTitle = "Reset Counts to Zero",
+            dialogText = "Press Confirm to reset all the number of plays to zero.",
+            onConfirmRequest = {
+                onEvent(GameDetailsEvent.OnHideRequestClearCountDialog)
+                onEvent(GameDetailsEvent.OnResetCountsToZero)
+            },
+            onDismissRequest = { onEvent(GameDetailsEvent.OnHideRequestClearCountDialog) })
+    }
+    if (gameDetailsState.showHelpDialog) {
+        GameDetailsHelpDialog(onDismissRequest = { onEvent(GameDetailsEvent.OnHideHelpDialog) })
     }
 
     Scaffold(
-        containerColor = Color.Transparent,
         modifier = Modifier
             .fillMaxSize(),
         topBar = {
             TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
                 title = {
                     Text(
                         gameDetailsState.team?.name ?: "",
@@ -99,44 +115,18 @@ fun GameDetailsScreen(
                             Icons.Default.MoreVert, "Open additional actions menu",
                         )
                     }
-                    DropdownMenu(
-                        expanded = gameDetailsState.showPopupMenu,
-                        onDismissRequest = { onEvent(GameDetailsEvent.OnHidePopupMenu) }) {
-                        DropdownMenuItem(
-                            text = { Text("Clear Selections") },
-                            onClick = {
-                                onEvent(GameDetailsEvent.OnHidePopupMenu)
-                                onEvent(GameDetailsEvent.OnCancelSelectionClick)
-                            },
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Import Players from Team") },
-                            onClick = { onEvent(GameDetailsEvent.OnHidePopupMenu) },
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Reset Counts to Zero") },
-                            onClick = {
-                                onEvent(GameDetailsEvent.OnHidePopupMenu)
-                                onEvent(GameDetailsEvent.OnResetCountsToZeroRequest)
-                            },
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Send Game Results") },
-                            onClick = {
-                                onEvent(GameDetailsEvent.OnHidePopupMenu)
-                                onEvent(GameDetailsEvent.OnShareGameResults)
-                                showShareGameResultsDialog = true
-                            },
-                        )
-                    }
+                    GameDetailsDropDownMenu(
+                        showDropDownMenu = gameDetailsState.showPopupMenu,
+                        onEvent = onEvent
+                    )
                 }
             )
         }
     ) { padding ->
         Box(
-           modifier = Modifier
-               .fillMaxSize()
-               .padding(padding)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
         )
         {
             Column(
@@ -144,7 +134,7 @@ fun GameDetailsScreen(
                     .padding(vertical = 5.dp, horizontal = 25.dp)
                     .fillMaxSize()
             ) {
-               Text(
+                Text(
                     text = gameDetailsState.game?.gameDateTime?.formatLocalizedDateTime() ?: "",
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
@@ -194,4 +184,11 @@ fun GameDetailsScreen(
             }
         }
     }
+}
+
+fun getRequestImportPlayersMessage(isListEmpty: Boolean): String {
+    return if (isListEmpty)
+        "This game does not have any players.\n\nWould you like to import the current players from the team?"
+    else
+        "If you proceed, all current players will be removed from this game.\n\nAll the current players on the team will be imported."
 }

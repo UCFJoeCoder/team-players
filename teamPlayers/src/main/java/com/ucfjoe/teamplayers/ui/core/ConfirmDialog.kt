@@ -32,6 +32,5 @@ fun ConfirmDialog(
                 Text("Dismiss")
             }
         }
-
     )
 }

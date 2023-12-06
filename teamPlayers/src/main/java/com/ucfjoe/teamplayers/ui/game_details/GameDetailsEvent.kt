@@ -14,13 +14,25 @@ sealed class GameDetailsEvent {
 
     data object OnDismissImportDialog : GameDetailsEvent()
 
-    data object OnImportPlayersRequest : GameDetailsEvent()
+    data object OnImportPlayers : GameDetailsEvent()
+
+    data object OnRequestImportPlayers : GameDetailsEvent()
 
     data object OnShowPopupMenu : GameDetailsEvent()
 
     data object OnHidePopupMenu : GameDetailsEvent()
 
-    data object OnResetCountsToZeroRequest : GameDetailsEvent()
+    data object OnResetCountsToZero : GameDetailsEvent()
 
     data object OnShareGameResults : GameDetailsEvent()
+
+    data object OnHideShareGameResults : GameDetailsEvent()
+
+    data object OnShowHelpDialog : GameDetailsEvent()
+
+    data object OnHideHelpDialog : GameDetailsEvent()
+
+    data object OnShowRequestClearCountDialog: GameDetailsEvent()
+
+    data object OnHideRequestClearCountDialog: GameDetailsEvent()
 }

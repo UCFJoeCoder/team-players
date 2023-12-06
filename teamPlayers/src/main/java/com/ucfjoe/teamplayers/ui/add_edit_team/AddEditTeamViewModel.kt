@@ -47,7 +47,7 @@ class AddEditTeamViewModel @Inject constructor(
                     )
                 }
                 playerRepository.getTeamPlayers(teamId).onEach { players ->
-                    _state.value = state.value.copy(players = sortPlayers(players))
+                    _state.value = state.value.copy(players = players.sorted())
                 }.launchIn(viewModelScope)
             }
         }
@@ -101,26 +101,6 @@ class AddEditTeamViewModel @Inject constructor(
         }
         // clear the text after this action
         _state.value = state.value.copy(playersText = "")
-    }
-
-    private fun sortPlayers(player: List<Player>): List<Player> {
-        // Create a numeric comparator that allows for 2 to come before 10.
-        // i.e. 1,10,2,20 would be sorted as 1,2,10,20
-        val comparatorInt = Comparator { p1: Player, p2: Player ->
-            p1.jerseyNumber.toInt() - p2.jerseyNumber.toInt()
-        }
-        val comparatorStr = Comparator { p1: Player, p2: Player ->
-            p1.jerseyNumber.compareTo(p2.jerseyNumber)
-        }
-
-        // create a list of only numbers sorted with the comparator
-        val list1 =
-            player.filter { p -> p.jerseyNumber.toIntOrNull() != null }.sortedWith(comparatorInt)
-        // create a list of non-numbers sorted with the default sort
-        val list2 =
-            player.filter { p -> p.jerseyNumber.toIntOrNull() == null }.sortedWith(comparatorStr)
-
-        return list1 + list2
     }
 
     private fun processOnSaveTeamClick() {

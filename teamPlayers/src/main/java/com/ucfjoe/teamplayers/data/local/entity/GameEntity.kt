@@ -22,6 +22,9 @@ data class GameEntity(
     @ColumnInfo(name = "team_id", index=true)
     val teamId: Long,
 
+    @ColumnInfo(name = "is_completed", defaultValue = "0")
+    val isCompleted: Boolean = false,
+
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
     val id: Long = 0

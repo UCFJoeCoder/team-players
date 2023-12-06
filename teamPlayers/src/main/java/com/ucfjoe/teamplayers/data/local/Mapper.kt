@@ -19,7 +19,8 @@ fun GameEntity.toGame(): Game {
     return Game(
         id = this.id,
         teamId = this.teamId,
-        gameDateTime = this.dateTime
+        gameDateTime = this.dateTime,
+        isCompleted = this.isCompleted
     )
 }
 
@@ -27,7 +28,8 @@ fun Game.toGameEntity(): GameEntity {
     return GameEntity(
         id = this.id,
         teamId = this.teamId,
-        dateTime = this.gameDateTime
+        dateTime = this.gameDateTime,
+        isCompleted = this.isCompleted
     )
 }
 

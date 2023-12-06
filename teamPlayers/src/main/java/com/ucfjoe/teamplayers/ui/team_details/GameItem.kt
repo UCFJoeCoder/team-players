@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,7 +29,6 @@ import androidx.compose.ui.unit.sp
 import com.ucfjoe.teamplayers.domain.model.Game
 import com.ucfjoe.teamplayers.ui.core.ConfirmDialog
 import com.ucfjoe.teamplayers.ui.formatLocalizedDateTime
-import com.ucfjoe.teamplayers.ui.theme.joe_theme_main_primary_alt
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -62,7 +62,11 @@ fun GameItem(
                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                     if (isEditMode) openConfirmDialog = true
                 }
-            )
+            ),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+        )
     ) {
         Row(
             modifier = Modifier
@@ -82,11 +86,7 @@ fun GameItem(
             Column(Modifier.weight(.10f), horizontalAlignment = Alignment.End) {
                 when {
                     isEditMode -> {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit",
-                            tint = joe_theme_main_primary_alt
-                        )
+                        Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
                     }
                 }
             }

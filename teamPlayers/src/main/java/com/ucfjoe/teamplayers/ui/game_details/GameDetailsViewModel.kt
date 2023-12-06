@@ -46,7 +46,7 @@ class GameDetailsViewModel @Inject constructor(
                 gameRepository.getGameWithGamePlayers(gameId).onEach {
                     _state.value = state.value.copy(
                         game = it.game,
-                        players = it.gamePlayers,
+                        players = it.gamePlayers.sorted(),
                         askToImportCurrentPlayer = it.gamePlayers.isEmpty()
                     )
                 }.launchIn(viewModelScope)
@@ -56,8 +56,7 @@ class GameDetailsViewModel @Inject constructor(
 
     fun onEvent(event: GameDetailsEvent) {
         when (event) {
-            GameDetailsEvent.OnImportPlayersRequest -> {
-                _state.value = state.value.copy(askToImportCurrentPlayer = false)
+            GameDetailsEvent.OnImportPlayers -> {
                 viewModelScope.launch {
                     gamePlayerRepository.insertGamePlayersFromTeamPlayers(
                         state.value.game!!.id,
@@ -66,14 +65,22 @@ class GameDetailsViewModel @Inject constructor(
                 }
             }
 
+            GameDetailsEvent.OnRequestImportPlayers -> {
+                _state.value = state.value.copy(askToImportCurrentPlayer = true)
+            }
+
             GameDetailsEvent.OnDismissImportDialog -> {
                 _state.value = state.value.copy(askToImportCurrentPlayer = false)
             }
 
-            GameDetailsEvent.OnResetCountsToZeroRequest -> {
+            GameDetailsEvent.OnResetCountsToZero -> {
                 _state.value = state.value.copy(
                     players = state.value.players.map { it.copy(count = 0) }
                 )
+                // Store the changes that were just made locally to the database
+                viewModelScope.launch {
+                    gamePlayerRepository.upsertGamePlayer(state.value.players)
+                }
             }
 
             GameDetailsEvent.OnCancelSelectionClick -> {
@@ -107,12 +114,15 @@ class GameDetailsViewModel @Inject constructor(
                     }
                 )
 
-                // TODO("Save changes to players to the database")
+                // Store the changes that were just made locally to the database
+                viewModelScope.launch {
+                    gamePlayerRepository.upsertGamePlayer(state.value.players)
+                }
             }
 
             is GameDetailsEvent.OnSelectPlayerClick -> {
                 _state.value = state.value.copy(
-                    players = state.value.players.map { if (it == event.player) it.copy(isSelected = !it.isSelected) else it }
+                    players = state.value.players.map { if (it == event.player) it.copy(isSelected = it.isSelected.not()) else it }
                 )
             }
 
@@ -125,7 +135,27 @@ class GameDetailsViewModel @Inject constructor(
             }
 
             GameDetailsEvent.OnShareGameResults -> {
-                println("TODO, Share the results of the game.")
+                _state.value = state.value.copy(showShareGameDetailsDialog = true)
+            }
+
+            GameDetailsEvent.OnHideShareGameResults -> {
+                _state.value = state.value.copy(showShareGameDetailsDialog = false)
+            }
+
+            GameDetailsEvent.OnShowHelpDialog -> {
+                _state.value = state.value.copy(showHelpDialog = true)
+            }
+
+            GameDetailsEvent.OnHideHelpDialog -> {
+                _state.value = state.value.copy(showHelpDialog = false)
+            }
+
+            GameDetailsEvent.OnShowRequestClearCountDialog -> {
+                _state.value = state.value.copy(showRequestClearCountDialog = true)
+            }
+
+            GameDetailsEvent.OnHideRequestClearCountDialog -> {
+                _state.value = state.value.copy(showRequestClearCountDialog = false)
             }
         }
     }

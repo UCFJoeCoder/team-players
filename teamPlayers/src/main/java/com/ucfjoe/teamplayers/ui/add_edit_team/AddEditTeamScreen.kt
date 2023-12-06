@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -12,17 +13,21 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -70,30 +75,48 @@ fun AddEditTeamScreen(
         }
     }
 
-    Box()
-    {
-        Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) },
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+                title = {
+                    Text(
+                        text = getScreenTitle(viewModel.state.value.isEditMode),
+                        style = MaterialTheme.typography.headlineMedium
+                            .copy(
+                                fontFamily = FontFamily(Font(R.font.old_sport_college))
+                            )
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { onPopBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Go back"
+                        )
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 5.dp, horizontal = 25.dp)
-        ) { padding ->
+                .padding(padding)
+                .fillMaxSize()
+        )
+        {
             Column(
                 modifier = Modifier
-                    .padding(padding)
-                    .fillMaxWidth()
+                    .padding(vertical = 5.dp, horizontal = 25.dp)
+                    .fillMaxSize()
             ) {
-                Text(
-                    text = getScreenTitle(viewModel.state.value.isEditMode),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    style = MaterialTheme.typography.headlineMedium
-                        .copy(
-                            fontFamily = FontFamily(Font(R.font.old_sport_college))
-                        ),
-                    textAlign = TextAlign.Center
-                )
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -117,7 +140,7 @@ fun AddEditTeamScreen(
                         isError = viewModel.state.value.saveError != null,
                         supportingText = {
                             viewModel.state.value.saveError?.let {
-                                Text(text=it)
+                                Text(text = it)
                             }
                         }
                     )

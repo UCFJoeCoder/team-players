@@ -12,8 +12,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.ucfjoe.teamplayers.domain.model.GamePlayer
+import com.ucfjoe.teamplayers.domain.model.PlayerStatus
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -30,19 +32,37 @@ fun PlayerItem(
                 onLongClick = { onEditPlayerClick() }
             ),
         colors = CardDefaults.cardColors(
-            containerColor = player.getStatusColor()
+            containerColor = getPlayerStatusContainerColor(player.getStatus()),
+            contentColor = getPlayerStatusContentColor(player.getStatus())
         )
     ) {
         Column(
             modifier = Modifier
                 .padding(6.dp)
                 .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(text = "Player")
             Text(text = player.jerseyNumber, style = MaterialTheme.typography.titleLarge)
-            Text(text = "Count")
+            Text(text = "Plays")
             Text(text = "${player.count}", style = MaterialTheme.typography.titleMedium)
         }
+    }
+}
+
+@Composable
+fun getPlayerStatusContainerColor(playerStatus: PlayerStatus): Color {
+    return when (playerStatus) {
+        PlayerStatus.COMPLETED -> MaterialTheme.colorScheme.primaryContainer
+        PlayerStatus.NORMAL -> MaterialTheme.colorScheme.secondaryContainer
+        PlayerStatus.SELECTED -> MaterialTheme.colorScheme.tertiaryContainer
+    }
+}
+
+@Composable
+fun getPlayerStatusContentColor(playerStatus: PlayerStatus): Color {
+    return when (playerStatus) {
+        PlayerStatus.COMPLETED -> MaterialTheme.colorScheme.onPrimaryContainer
+        PlayerStatus.NORMAL -> MaterialTheme.colorScheme.onSecondaryContainer
+        PlayerStatus.SELECTED -> MaterialTheme.colorScheme.onTertiaryContainer
     }
 }

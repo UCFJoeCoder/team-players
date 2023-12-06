@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,12 +25,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -59,12 +60,17 @@ fun TeamDetailsScreen(
     }
 
     Scaffold(
-        containerColor = Color.Transparent,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         modifier = Modifier
             .fillMaxWidth(),
         topBar = {
             CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
                 title = {
                     Text(
                         text = "Game Time",
@@ -122,11 +128,7 @@ fun TeamDetailsScreen(
                         // Only show edit toggle IconButton if we have games that can be edited
                         if (viewModel.state.value.games.isNotEmpty()) {
                             IconButton(onClick = { viewModel.onEvent(TeamDetailsEvent.OnToggleEditMode) }) {
-                                Icon(
-                                    Icons.Default.Edit, "Edit Mode",
-                                    tint = if (viewModel.state.value.isEditMode) MaterialTheme.colorScheme.primaryContainer
-                                    else MaterialTheme.colorScheme.outline //.onSurfaceVariant
-                                )
+                                GetEditActionIcon(viewModel.state.value.isEditMode)
                             }
                         }
                     }
@@ -148,5 +150,14 @@ fun TeamDetailsScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun GetEditActionIcon(isEditMode: Boolean) {
+    if (isEditMode) {
+        Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel Edit Mode")
+    } else {
+        Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit Mode")
     }
 }

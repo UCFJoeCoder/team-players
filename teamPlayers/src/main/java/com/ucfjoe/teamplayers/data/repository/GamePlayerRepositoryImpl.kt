@@ -33,6 +33,7 @@ class GamePlayerRepositoryImpl @Inject constructor(
     }
 
     override suspend fun insertGamePlayersFromTeamPlayers(gameId: Long, teamId: Long) {
+        deleteGamePlayers(gameId)
         gamePlayerDao.insertGamePlayersFromTeamPlayers(gameId, teamId)
     }
 }

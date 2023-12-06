@@ -146,13 +146,9 @@ fun TeamsScreen(
                 ) {
                     items(viewModelState.teams) { team ->
                         TeamItem(
-                            team,
+                            team = team,
                             onEvent = viewModel::onEvent,
                             isEditMode = viewModelState.isEditMode,
-                            //modifier = Modifier.fillMaxWidth()
-//                                .clickable {
-//                                    viewModel.onEvent(TeamsEvent.OnTeamClick(team))
-//                                }
                         )
                     }
                 }
