@@ -10,6 +10,6 @@ sealed class TeamDetailsEvent {
 
     data class OnGameClick(val game: Game): TeamDetailsEvent()
 
-    data class OnDeleteClick(val game: Game): TeamDetailsEvent()
+    data class OnDeleteGameClick(val game: Game): TeamDetailsEvent()
 
 }

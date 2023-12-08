@@ -1,4 +1,4 @@
-package com.ucfjoe.teamplayers.ui.add_edit_team
+package com.ucfjoe.teamplayers.ui.edit_team
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

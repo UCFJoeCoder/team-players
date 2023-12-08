@@ -47,7 +47,7 @@ fun GameItem(
             onDismissRequest = { openConfirmDialog = false },
             onConfirmRequest = {
                 openConfirmDialog = false
-                onEvent(TeamDetailsEvent.OnDeleteClick(game))
+                onEvent(TeamDetailsEvent.OnDeleteGameClick(game))
             },
             icon = Icons.Default.Warning
         )

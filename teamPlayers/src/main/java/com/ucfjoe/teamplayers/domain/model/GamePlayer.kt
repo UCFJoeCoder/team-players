@@ -9,6 +9,7 @@ data class GamePlayer(
     val isSelected: Boolean = false
 ) : Comparable<GamePlayer> {
 
+    // TODO (Move the number 8 out and make it configurable)
     fun getStatus(): PlayerStatus {
         return when {
             isSelected -> PlayerStatus.SELECTED

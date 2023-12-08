@@ -27,9 +27,6 @@ class AddEditGameViewModel @Inject constructor(
     private val _state = mutableStateOf(AddEditGameState())
     val state: State<AddEditGameState> = _state
 
-    private val _uiEvent = Channel<UiEvent>()
-    val uiEvent = _uiEvent.receiveAsFlow()
-
     private val _navEvent = Channel<NavEvent>()
     val navEvent = _navEvent.receiveAsFlow()
 
@@ -97,12 +94,6 @@ class AddEditGameViewModel @Inject constructor(
             gameRepository.upsertGame(game)
 
             sendNavEvent(NavEvent.PopBackStack)
-        }
-    }
-
-    private fun sendUiEvent(event: UiEvent) {
-        viewModelScope.launch {
-            _uiEvent.send(event)
         }
     }
 

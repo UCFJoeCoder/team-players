@@ -25,9 +25,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.ucfjoe.teamplayers.R
+
+@Preview
+@Composable
+fun GameDetailsHelpDialog(){
+    GameDetailsHelpDialog({})
+}
 
 @Composable
 fun GameDetailsHelpDialog(
@@ -38,7 +45,7 @@ fun GameDetailsHelpDialog(
         Box(
             Modifier
                 .clip(MaterialTheme.shapes.extraLarge)
-                .background(MaterialTheme.colorScheme.surface)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Column(
                 modifier = Modifier.padding(12.dp),

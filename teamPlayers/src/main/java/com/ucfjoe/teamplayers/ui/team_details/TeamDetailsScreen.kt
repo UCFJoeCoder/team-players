@@ -41,22 +41,21 @@ import com.ucfjoe.teamplayers.R
 import com.ucfjoe.teamplayers.domain.model.Game
 import com.ucfjoe.teamplayers.domain.model.Team
 import com.ucfjoe.teamplayers.ui.NavEvent
+import com.ucfjoe.teamplayers.ui.core.ObserveAsEvents
 import java.time.LocalDateTime
 
 @Composable
-fun TeamDetailsScreen (
+fun TeamDetailsScreen(
     onPopBackStack: () -> Unit,
     onNavigate: (NavEvent.Navigate) -> Unit,
     viewModel: TeamDetailsViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(true) {
-        viewModel.navEvent.collect { event ->
-            when (event) {
-                is NavEvent.Navigate -> onNavigate(event)
-                else -> Log.w("TeamDetailsScreen", "Received unhandled event $event")
-            }
+    ObserveAsEvents(flow = viewModel.navEvent, onEvent = { event ->
+        when (event) {
+            is NavEvent.Navigate -> onNavigate(event)
+            else -> Log.w("TeamDetailsScreen", "Received unhandled event $event")
         }
-    }
+    })
 
     TeamDetailsScreen(
         onPopBackStack = onPopBackStack,

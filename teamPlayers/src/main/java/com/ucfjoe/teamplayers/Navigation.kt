@@ -7,7 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.ucfjoe.teamplayers.ui.add_edit_game.AddEditGameScreen
-import com.ucfjoe.teamplayers.ui.add_edit_team.AddEditTeamScreen
+import com.ucfjoe.teamplayers.ui.edit_team.EditTeamScreen
 import com.ucfjoe.teamplayers.ui.game_details.GameDetailsScreen
 import com.ucfjoe.teamplayers.ui.team_details.TeamDetailsScreen
 import com.ucfjoe.teamplayers.ui.teams.TeamsScreen
@@ -31,7 +31,7 @@ fun Navigation() {
                 }
             )
         ) {
-            AddEditTeamScreen(
+            EditTeamScreen(
                 onPopBackStack = { navController.popBackStack() }
             )
         }

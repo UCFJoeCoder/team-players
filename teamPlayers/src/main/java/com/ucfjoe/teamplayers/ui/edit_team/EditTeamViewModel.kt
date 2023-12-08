@@ -1,4 +1,4 @@
-package com.ucfjoe.teamplayers.ui.add_edit_team
+package com.ucfjoe.teamplayers.ui.edit_team
 
 import android.util.Log
 import androidx.compose.runtime.State
@@ -17,14 +17,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AddEditTeamViewModel @Inject constructor(
+class EditTeamViewModel @Inject constructor(
     private val teamRepository: TeamRepository,
     private val playerRepository: PlayerRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _state = mutableStateOf(AddEditTeamState())
-    val state: State<AddEditTeamState> = _state
+    private val _state = mutableStateOf(EditTeamState())
+    val state: State<EditTeamState> = _state
 
     init {
         val paramTeamId: String? = savedStateHandle["team_id"]
@@ -40,9 +40,9 @@ class AddEditTeamViewModel @Inject constructor(
         }
     }
 
-    fun onEvent(event: AddEditTeamEvent) {
+    fun onEvent(event: EditTeamEvent) {
         when (event) {
-            is AddEditTeamEvent.OnPlayersChanged -> {
+            is EditTeamEvent.OnPlayersChanged -> {
                 val playersText = event.players
                 _state.value = state.value.copy(playersText = playersText)
 
@@ -52,11 +52,11 @@ class AddEditTeamViewModel @Inject constructor(
                 }
             }
 
-            is AddEditTeamEvent.OnPlayersChangedDone -> {
+            is EditTeamEvent.OnPlayersChangedDone -> {
                 processJerseyNumber()
             }
 
-            is AddEditTeamEvent.OnDeletePlayerClick -> {
+            is EditTeamEvent.OnDeletePlayerClick -> {
                 viewModelScope.launch {
                     // Should we display a confirmation dialog? I kind of like that the player just
                     // deletes. They are easy to create again... if deleted in error.
@@ -64,15 +64,15 @@ class AddEditTeamViewModel @Inject constructor(
                 }
             }
 
-            is AddEditTeamEvent.OnProcessSaveTeam -> {
+            is EditTeamEvent.OnProcessSaveTeam -> {
                 processOnSaveTeamClick(event.name)
             }
 
-            AddEditTeamEvent.OnHideEditTeamNameDialog -> {
+            EditTeamEvent.OnHideEditTeamNameDialog -> {
                 _state.value = state.value.copy(showEditTeamNameDialog = false)
             }
 
-            AddEditTeamEvent.OnShowEditTeamNameDialog -> {
+            EditTeamEvent.OnShowEditTeamNameDialog -> {
                 _state.value = state.value.copy(showEditTeamNameDialog = true, saveError = null)
             }
         }

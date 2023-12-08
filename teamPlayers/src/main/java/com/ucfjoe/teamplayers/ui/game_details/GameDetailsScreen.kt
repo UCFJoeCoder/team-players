@@ -1,6 +1,5 @@
 package com.ucfjoe.teamplayers.ui.game_details
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,7 +31,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,14 +42,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ucfjoe.teamplayers.R
 import com.ucfjoe.teamplayers.domain.model.Game
 import com.ucfjoe.teamplayers.domain.model.GamePlayer
 import com.ucfjoe.teamplayers.domain.model.Team
 import com.ucfjoe.teamplayers.ui.UiEvent
 import com.ucfjoe.teamplayers.ui.core.ConfirmDialog
+import com.ucfjoe.teamplayers.ui.core.ObserveAsEvents
 import com.ucfjoe.teamplayers.ui.formatLocalizedDateTime
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import java.time.LocalDateTime
 
 @Composable
@@ -59,12 +59,10 @@ fun GameDetailsScreen(
     onPopBackStack: () -> Unit,
     viewModel: GameDetailsViewModel = hiltViewModel()
 ) {
-    val uiEvent = viewModel.uiEvent.collectAsStateWithLifecycle(initialValue = null)
-
     GameDetailsScreen(
         onPopBackStack = onPopBackStack,
         gameDetailsState = viewModel.state.value,
-        uiEvent = uiEvent.value,
+        uiEvent = viewModel.uiEvent,
         onEvent = viewModel::onEvent
     )
 }
@@ -74,13 +72,23 @@ fun GameDetailsScreen(
 fun GameDetailsScreen(
     onPopBackStack: () -> Unit,
     gameDetailsState: GameDetailsState,
-    uiEvent: UiEvent?,
+    uiEvent: Flow<UiEvent>,
     onEvent: (GameDetailsEvent) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
-    if (gameDetailsState.askToImportCurrentPlayer) {
+    ObserveAsEvents(flow = uiEvent, onEvent = { event ->
+        when (event) {
+            is UiEvent.ShowToast -> {
+                Toast.makeText(context, event.message, event.duration).show()
+            }
+
+            else -> Unit
+        }
+    })
+
+    if (gameDetailsState.showImportCurrentPlayerDialog) {
         ConfirmDialog(
             dialogTitle = "Import Players",
             dialogText = getRequestImportPlayersMessage(gameDetailsState.players.isEmpty()),
@@ -96,33 +104,29 @@ fun GameDetailsScreen(
         ConfirmDialog(
             dialogTitle = "Share Game Results",
             dialogText = "This feature is not implemented yet",
-            onConfirmRequest = { onEvent(GameDetailsEvent.OnHideShareGameResults) },
-            onDismissRequest = { onEvent(GameDetailsEvent.OnHideShareGameResults) })
+            onConfirmRequest = { onEvent(GameDetailsEvent.OnHideShareGameResultsDialog) },
+            onDismissRequest = { onEvent(GameDetailsEvent.OnHideShareGameResultsDialog) })
     }
     if (gameDetailsState.showRequestClearCountDialog) {
         ConfirmDialog(
             dialogTitle = "Reset Counts to Zero",
             dialogText = "Press Confirm to reset all the number of plays to zero.",
             onConfirmRequest = {
-                onEvent(GameDetailsEvent.OnHideRequestClearCountDialog)
+                onEvent(GameDetailsEvent.OnHideResetCountDialog)
                 onEvent(GameDetailsEvent.OnResetCountsToZero)
             },
-            onDismissRequest = { onEvent(GameDetailsEvent.OnHideRequestClearCountDialog) })
+            onDismissRequest = { onEvent(GameDetailsEvent.OnHideResetCountDialog) })
     }
     if (gameDetailsState.showHelpDialog) {
         GameDetailsHelpDialog(onDismissRequest = { onEvent(GameDetailsEvent.OnHideHelpDialog) })
     }
-
-    LaunchedEffect(key1 = uiEvent) {
-        Log.e("GameDetailsScreen", "REcieved")
-        when (uiEvent) {
-            is UiEvent.ShowToast -> {
-                Log.e("asdf", "ShowToast")
-                Toast.makeText(context, uiEvent.message, uiEvent.duration).show()
-            }
-
-            else -> Unit
-        }
+    if (gameDetailsState.showEditPlayerDialog) {
+        EditPlayerDialog(
+            onDismissRequest = { onEvent(GameDetailsEvent.OnHideEditPlayerDialog) },
+            onConfirmRequest = { onEvent(GameDetailsEvent.OnProcessEditPlayerRequest(it)) },
+            editPlayer = gameDetailsState.editPlayer!!,
+            errorMessage = gameDetailsState.editErrorMessage
+        )
     }
 
     Scaffold(
@@ -219,7 +223,7 @@ fun GameDetailsScreen(
                                     onEvent(GameDetailsEvent.OnSelectPlayerClick(player))
                                 },
                                 onEditPlayerClick = {
-                                    // TODO ("Handle edit player request")
+                                    onEvent(GameDetailsEvent.OnEditPlayerClick(player))
                                 }
                             )
                         }
@@ -259,7 +263,7 @@ fun PreviewGameDetailsScreen() {
                 )
             )
         ),
-        uiEvent = null,
+        uiEvent = flow {},
         onEvent = {}
     )
 }

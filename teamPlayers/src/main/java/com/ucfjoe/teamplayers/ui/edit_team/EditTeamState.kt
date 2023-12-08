@@ -1,4 +1,4 @@
-package com.ucfjoe.teamplayers.ui.add_edit_team
+package com.ucfjoe.teamplayers.ui.edit_team
 
 import com.ucfjoe.teamplayers.domain.model.Player
 import com.ucfjoe.teamplayers.domain.model.Team
@@ -12,7 +12,7 @@ import com.ucfjoe.teamplayers.domain.model.Team
  * @property saveError null if no error; otherwise contains a validation error message
  * @property showEditTeamNameDialog true to display the dialog; false otherwise
  */
-data class AddEditTeamState(
+data class EditTeamState(
     val team: Team? = null,
     val players: List<Player> = emptyList(),
     val playersText: String = "",

@@ -33,11 +33,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ucfjoe.teamplayers.R
 import com.ucfjoe.teamplayers.domain.model.Team
 import com.ucfjoe.teamplayers.ui.NavEvent
-import com.ucfjoe.teamplayers.ui.UiEvent
+import com.ucfjoe.teamplayers.ui.core.ObserveAsEvents
 import com.ucfjoe.teamplayers.ui.formatLocalizedDate
 import com.ucfjoe.teamplayers.ui.formatLocalizedTime
 
@@ -47,22 +46,18 @@ fun AddEditGameScreen(
     onNavigate: (NavEvent.Navigate) -> Unit,
     viewModel: AddEditGameViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(true) {
-        viewModel.navEvent.collect { event ->
-            when (event) {
-                is NavEvent.Navigate -> onNavigate(event)
-                is NavEvent.PopBackStack -> onPopBackStack()
-            }
+    ObserveAsEvents(flow = viewModel.navEvent, onEvent = { event ->
+        when (event) {
+            is NavEvent.Navigate -> onNavigate(event)
+            is NavEvent.PopBackStack -> onPopBackStack()
         }
-    }
-
-    val uiEvent = viewModel.uiEvent.collectAsStateWithLifecycle(initialValue = null)
+    })
 
     AddEditGameScreen(
         onPopBackStack = onPopBackStack,
         addEditGameState = viewModel.state.value,
-        uiEvent = uiEvent.value,
-        onEvent = viewModel::onEvent)
+        onEvent = viewModel::onEvent
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,7 +65,6 @@ fun AddEditGameScreen(
 fun AddEditGameScreen(
     onPopBackStack: () -> Unit,
     addEditGameState: AddEditGameState,
-    uiEvent: UiEvent?,
     onEvent: (AddEditGameEvent) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -91,10 +85,6 @@ fun AddEditGameScreen(
             },
             initialTime = addEditGameState.time
         )
-    }
-
-    LaunchedEffect(key1 = uiEvent) {
-        Log.w("AddEditGameScreen", "Unhandled event ${uiEvent}")
     }
 
     Scaffold(
@@ -216,7 +206,6 @@ fun PreviewAddEditGameScreen() {
             teamId = 0,
             team = Team(1, "Knights")
         ),
-        uiEvent = null,
         onEvent = {}
     )
 }

@@ -52,7 +52,7 @@ fun GameDetailsDropDownMenu(
             },
             onClick = {
                 onEvent(GameDetailsEvent.OnHidePopupMenu)
-                onEvent(GameDetailsEvent.OnShowRequestClearCountDialog)
+                onEvent(GameDetailsEvent.OnShowResetCountDialog)
             },
             leadingIcon = {
                 Icon(
@@ -71,7 +71,7 @@ fun GameDetailsDropDownMenu(
             },
             onClick = {
                 onEvent(GameDetailsEvent.OnHidePopupMenu)
-                onEvent(GameDetailsEvent.OnShareGameResults)
+                onEvent(GameDetailsEvent.OnShowShareGameResultsDialog)
             },
             leadingIcon = {
                 Icon(imageVector = Icons.Default.Share, contentDescription = "Share game results")

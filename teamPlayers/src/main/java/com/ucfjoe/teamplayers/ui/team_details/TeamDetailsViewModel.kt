@@ -35,7 +35,7 @@ class TeamDetailsViewModel @Inject constructor(
         paramTeamId?.toLong()?.let { teamId ->
             viewModelScope.launch {
                 teamRepository.getTeamWithGames(teamId).onEach {
-                    _state.value = state.value.copy(team = it.team, games = it.games)
+                    _state.value = state.value.copy(team = it.team, games = it.games.sorted())
                 }.launchIn(viewModelScope)
             }
         }
@@ -57,7 +57,7 @@ class TeamDetailsViewModel @Inject constructor(
                 _state.value = state.value.copy(isEditMode = !state.value.isEditMode)
             }
 
-            is TeamDetailsEvent.OnDeleteClick -> {
+            is TeamDetailsEvent.OnDeleteGameClick -> {
                 viewModelScope.launch {
                     gameRepository.deleteGame(event.game)
                 }

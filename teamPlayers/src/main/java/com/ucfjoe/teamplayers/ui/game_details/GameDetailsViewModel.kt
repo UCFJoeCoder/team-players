@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ucfjoe.teamplayers.domain.model.GamePlayer
 import com.ucfjoe.teamplayers.domain.repository.GamePlayerRepository
 import com.ucfjoe.teamplayers.domain.repository.GameRepository
 import com.ucfjoe.teamplayers.domain.repository.TeamRepository
@@ -51,7 +52,7 @@ class GameDetailsViewModel @Inject constructor(
                     _state.value = state.value.copy(
                         game = it.game,
                         players = it.gamePlayers.sorted(),
-                        askToImportCurrentPlayer = it.gamePlayers.isEmpty()
+                        showImportCurrentPlayerDialog = it.gamePlayers.isEmpty()
                     )
                 }.launchIn(viewModelScope)
             }
@@ -60,7 +61,6 @@ class GameDetailsViewModel @Inject constructor(
 
     private fun sendUiEvent(event: UiEvent) {
         viewModelScope.launch {
-            Log.e("asdf", "_uiEvent.send(event)")
             _uiEvent.send(event)
         }
     }
@@ -77,11 +77,11 @@ class GameDetailsViewModel @Inject constructor(
             }
 
             GameDetailsEvent.OnRequestImportPlayers -> {
-                _state.value = state.value.copy(askToImportCurrentPlayer = true)
+                _state.value = state.value.copy(showImportCurrentPlayerDialog = true)
             }
 
             GameDetailsEvent.OnDismissImportDialog -> {
-                _state.value = state.value.copy(askToImportCurrentPlayer = false)
+                _state.value = state.value.copy(showImportCurrentPlayerDialog = false)
             }
 
             GameDetailsEvent.OnResetCountsToZero -> {
@@ -110,7 +110,6 @@ class GameDetailsViewModel @Inject constructor(
 
             GameDetailsEvent.OnIncrementSelectionClick -> {
                 if (state.value.players.count { it.isSelected } == 0) {
-                    Log.e("asdf", "SendUIEvent")
                     sendUiEvent(UiEvent.ShowToast("No players are selected!"))
                     return
                 }
@@ -143,6 +142,22 @@ class GameDetailsViewModel @Inject constructor(
                 )
             }
 
+            is GameDetailsEvent.OnEditPlayerClick -> {
+                _state.value = state.value.copy(
+                    showEditPlayerDialog = true,
+                    editPlayer = event.player,
+                    editErrorMessage = null
+                )
+            }
+
+            GameDetailsEvent.OnHideEditPlayerDialog -> {
+                _state.value = state.value.copy(showEditPlayerDialog = false)
+            }
+
+            is GameDetailsEvent.OnProcessEditPlayerRequest -> {
+                processSaveEditPlayer(event.player)
+            }
+
             GameDetailsEvent.OnShowPopupMenu -> {
                 _state.value = state.value.copy(showPopupMenu = true)
             }
@@ -151,11 +166,11 @@ class GameDetailsViewModel @Inject constructor(
                 _state.value = state.value.copy(showPopupMenu = false)
             }
 
-            GameDetailsEvent.OnShareGameResults -> {
+            GameDetailsEvent.OnShowShareGameResultsDialog -> {
                 _state.value = state.value.copy(showShareGameDetailsDialog = true)
             }
 
-            GameDetailsEvent.OnHideShareGameResults -> {
+            GameDetailsEvent.OnHideShareGameResultsDialog -> {
                 _state.value = state.value.copy(showShareGameDetailsDialog = false)
             }
 
@@ -167,13 +182,48 @@ class GameDetailsViewModel @Inject constructor(
                 _state.value = state.value.copy(showHelpDialog = false)
             }
 
-            GameDetailsEvent.OnShowRequestClearCountDialog -> {
+            GameDetailsEvent.OnShowResetCountDialog -> {
                 _state.value = state.value.copy(showRequestClearCountDialog = true)
             }
 
-            GameDetailsEvent.OnHideRequestClearCountDialog -> {
+            GameDetailsEvent.OnHideResetCountDialog -> {
                 _state.value = state.value.copy(showRequestClearCountDialog = false)
             }
+        }
+    }
+
+    private fun processSaveEditPlayer(player: GamePlayer) {
+        if (player.jerseyNumber.isBlank()) {
+            _state.value = state.value.copy(editErrorMessage = "Jersey Number must be provided")
+            return
+        }
+        if (player.jerseyNumber.length > 2) {
+            _state.value =
+                state.value.copy(editErrorMessage = "Jersey Number must be at most 2 characters")
+            return
+        }
+        if (player.jerseyNumber.matches("^[a-zA-Z0-9]*$".toRegex()).not()) {
+            _state.value =
+                state.value.copy(editErrorMessage = "Jersey Number can only contain numbers and letters")
+            return
+        }
+        if (player.count < 0 || player.count > 100) {
+            _state.value =
+                state.value.copy(editErrorMessage = "Number of Plays must be between 0 and 100")
+            return
+        }
+        if (state.value.players.count {
+                it.id != player.id &&
+                        it.jerseyNumber.equals(player.jerseyNumber, true)
+            } > 0
+        ) {
+            _state.value = state.value.copy(editErrorMessage = "Duplicate jersey number")
+            return
+        } else {
+            viewModelScope.launch {
+                gamePlayerRepository.upsertGamePlayer(player)
+            }
+            _state.value = state.value.copy(showEditPlayerDialog = false)
         }
     }
 }

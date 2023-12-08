@@ -19,8 +19,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+
+@Preview
+@Composable
+fun AddEditTeamDialog() {
+    AddEditTeamDialog({}, {}, errorMessage = "Something went wrong", initialName = "Sample Name")
+}
 
 @Composable
 fun AddEditTeamDialog(
@@ -35,14 +42,14 @@ fun AddEditTeamDialog(
         Box(
             Modifier
                 .clip(MaterialTheme.shapes.extraLarge)
-                .background(MaterialTheme.colorScheme.surface)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Column(
-                modifier = Modifier.padding(12.dp),
+                modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("Please enter a Team Name")
+                Text(text = "Enter a Team Name", style = MaterialTheme.typography.headlineSmall)
                 TextField(
                     //modifier = Modifier.weight(.70f),
                     value = nameText,

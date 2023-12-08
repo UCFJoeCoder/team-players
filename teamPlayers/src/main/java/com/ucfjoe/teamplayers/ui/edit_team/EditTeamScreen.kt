@@ -1,4 +1,4 @@
-package com.ucfjoe.teamplayers.ui.add_edit_team
+package com.ucfjoe.teamplayers.ui.edit_team
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,34 +46,32 @@ import com.ucfjoe.teamplayers.domain.model.Team
 import com.ucfjoe.teamplayers.ui.add_edit_team_dialog.AddEditTeamDialog
 
 @Composable
-fun AddEditTeamScreen(
+fun EditTeamScreen(
     onPopBackStack: () -> Unit,
-    viewModel: AddEditTeamViewModel = hiltViewModel()
+    viewModel: EditTeamViewModel = hiltViewModel()
 ) {
-    AddEditTeamScreen(
+    EditTeamScreen(
         onPopBackStack = onPopBackStack,
-        addEditTeamState = viewModel.state.value,
-        //uiEvent = uiEvent.value,
+        editTeamState = viewModel.state.value,
         onEvent = viewModel::onEvent
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddEditTeamScreen(
+fun EditTeamScreen(
     onPopBackStack: () -> Unit,
-    addEditTeamState: AddEditTeamState,
-    //uiEvent: UiEvent?,
-    onEvent: (AddEditTeamEvent) -> Unit
+    editTeamState: EditTeamState,
+    onEvent: (EditTeamEvent) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
-    if (addEditTeamState.showEditTeamNameDialog) {
+    if (editTeamState.showEditTeamNameDialog) {
         AddEditTeamDialog(
-            onDismissRequest = { onEvent(AddEditTeamEvent.OnHideEditTeamNameDialog) },
-            onConfirmRequest = { onEvent(AddEditTeamEvent.OnProcessSaveTeam(it)) },
-            errorMessage = addEditTeamState.saveError,
-            initialName = addEditTeamState.team?.name
+            onDismissRequest = { onEvent(EditTeamEvent.OnHideEditTeamNameDialog) },
+            onConfirmRequest = { onEvent(EditTeamEvent.OnProcessSaveTeam(it)) },
+            errorMessage = editTeamState.saveError,
+            initialName = editTeamState.team?.name
         )
     }
 
@@ -127,7 +125,7 @@ fun AddEditTeamScreen(
                         modifier = Modifier.weight(.84f)
                     ) {
                         Text(
-                            text = addEditTeamState.team?.name ?: "",
+                            text = editTeamState.team?.name ?: "",
                             style = MaterialTheme.typography.headlineMedium,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -137,7 +135,7 @@ fun AddEditTeamScreen(
                         horizontalAlignment = Alignment.End
                     ) {
                         IconButton(
-                            onClick = { onEvent(AddEditTeamEvent.OnShowEditTeamNameDialog) }
+                            onClick = { onEvent(EditTeamEvent.OnShowEditTeamNameDialog) }
                         ) {
                             Icon(Icons.Default.Edit, "Edit team button")
                         }
@@ -146,9 +144,9 @@ fun AddEditTeamScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
-                    value = addEditTeamState.playersText,
+                    value = editTeamState.playersText,
                     onValueChange = {
-                        onEvent(AddEditTeamEvent.OnPlayersChanged(it))
+                        onEvent(EditTeamEvent.OnPlayersChanged(it))
                     },
                     maxLines = 1,
                     placeholder = {
@@ -157,7 +155,7 @@ fun AddEditTeamScreen(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(
                         onDone = {
-                            onEvent(AddEditTeamEvent.OnPlayersChangedDone)
+                            onEvent(EditTeamEvent.OnPlayersChangedDone)
                         }
                     ),
                     modifier = Modifier
@@ -165,7 +163,7 @@ fun AddEditTeamScreen(
                         .onKeyEvent { event ->
                             when (event.key) {
                                 Key.Enter -> {
-                                    onEvent(AddEditTeamEvent.OnPlayersChangedDone)
+                                    onEvent(EditTeamEvent.OnPlayersChangedDone)
                                     true
                                 }
 
@@ -187,13 +185,13 @@ fun AddEditTeamScreen(
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 100.dp),
                     content = {
-                        items(addEditTeamState.players.size) { index ->
+                        items(editTeamState.players.size) { index ->
                             PlayerItem(
-                                player = addEditTeamState.players[index],
+                                player = editTeamState.players[index],
                                 onDeleteClick = {
                                     onEvent(
-                                        AddEditTeamEvent.OnDeletePlayerClick(
-                                            addEditTeamState.players[index]
+                                        EditTeamEvent.OnDeletePlayerClick(
+                                            editTeamState.players[index]
                                         )
                                     )
                                 }
@@ -209,16 +207,15 @@ fun AddEditTeamScreen(
 @Preview(showBackground = true)
 @Composable
 fun PreviewAddEditTeamScreen() {
-    AddEditTeamScreen(
+    EditTeamScreen(
         onPopBackStack = { },
-        addEditTeamState = AddEditTeamState(
+        editTeamState = EditTeamState(
             team = Team(1, "Knights"),
             players = listOf(
                 Player(1, 1, "10"),
                 Player(1, 1, "23")
             )
         ),
-        //uiEvent = null,
         onEvent = {}
     )
 }

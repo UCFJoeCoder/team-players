@@ -8,9 +8,12 @@ data class GameDetailsState(
     val team: Team? = null,
     val game: Game? = null,
     val players: List<GamePlayer> = emptyList(),
-    val askToImportCurrentPlayer: Boolean = false,
     val showPopupMenu: Boolean = false,
+    val showImportCurrentPlayerDialog: Boolean = false,
     val showHelpDialog: Boolean = false,
     val showShareGameDetailsDialog: Boolean = false,
-    val showRequestClearCountDialog: Boolean = false
+    val showRequestClearCountDialog: Boolean = false,
+    val showEditPlayerDialog: Boolean = false,
+    val editPlayer: GamePlayer? = null,
+    val editErrorMessage: String? = null
 )
