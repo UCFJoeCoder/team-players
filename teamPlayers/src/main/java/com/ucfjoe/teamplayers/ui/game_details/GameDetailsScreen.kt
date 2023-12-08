@@ -1,5 +1,7 @@
 package com.ucfjoe.teamplayers.ui.game_details
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,30 +26,60 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ucfjoe.teamplayers.R
+import com.ucfjoe.teamplayers.domain.model.Game
+import com.ucfjoe.teamplayers.domain.model.GamePlayer
+import com.ucfjoe.teamplayers.domain.model.Team
 import com.ucfjoe.teamplayers.ui.UiEvent
 import com.ucfjoe.teamplayers.ui.core.ConfirmDialog
 import com.ucfjoe.teamplayers.ui.formatLocalizedDateTime
+import java.time.LocalDateTime
+
+@Composable
+fun GameDetailsScreen(
+    onPopBackStack: () -> Unit,
+    viewModel: GameDetailsViewModel = hiltViewModel()
+) {
+    val uiEvent = viewModel.uiEvent.collectAsStateWithLifecycle(initialValue = null)
+
+    GameDetailsScreen(
+        onPopBackStack = onPopBackStack,
+        gameDetailsState = viewModel.state.value,
+        uiEvent = uiEvent.value,
+        onEvent = viewModel::onEvent
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameDetailsScreen(
     onPopBackStack: () -> Unit,
-    onNavigate: (UiEvent.Navigate) -> Unit,
     gameDetailsState: GameDetailsState,
+    uiEvent: UiEvent?,
     onEvent: (GameDetailsEvent) -> Unit
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
     if (gameDetailsState.askToImportCurrentPlayer) {
         ConfirmDialog(
             dialogTitle = "Import Players",
@@ -81,9 +113,21 @@ fun GameDetailsScreen(
         GameDetailsHelpDialog(onDismissRequest = { onEvent(GameDetailsEvent.OnHideHelpDialog) })
     }
 
+    LaunchedEffect(key1 = uiEvent) {
+        Log.e("GameDetailsScreen", "REcieved")
+        when (uiEvent) {
+            is UiEvent.ShowToast -> {
+                Log.e("asdf", "ShowToast")
+                Toast.makeText(context, uiEvent.message, uiEvent.duration).show()
+            }
+
+            else -> Unit
+        }
+    }
+
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -191,4 +235,31 @@ fun getRequestImportPlayersMessage(isListEmpty: Boolean): String {
         "This game does not have any players.\n\nWould you like to import the current players from the team?"
     else
         "If you proceed, all current players will be removed from this game.\n\nAll the current players on the team will be imported."
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewGameDetailsScreen() {
+    GameDetailsScreen(
+        onPopBackStack = { },
+        gameDetailsState = GameDetailsState(
+            team = Team(id = 1, name = "Knights"),
+            game = Game(id = 1, teamId = 1, gameDateTime = LocalDateTime.now()),
+            players = listOf(
+                GamePlayer(id = 1, gameId = 1, jerseyNumber = "10"),
+                GamePlayer(id = 2, gameId = 1, jerseyNumber = "23", count = 3),
+                GamePlayer(id = 3, gameId = 1, jerseyNumber = "33", count = 9),
+                GamePlayer(
+                    id = 4,
+                    gameId = 1,
+                    jerseyNumber = "34",
+                    count = 1,
+                    isAbsent = false,
+                    isSelected = true
+                )
+            )
+        ),
+        uiEvent = null,
+        onEvent = {}
+    )
 }

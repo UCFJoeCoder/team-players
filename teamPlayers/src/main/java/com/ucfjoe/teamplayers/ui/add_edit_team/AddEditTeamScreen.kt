@@ -14,9 +14,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,15 +27,12 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
@@ -46,33 +41,40 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ucfjoe.teamplayers.R
-import com.ucfjoe.teamplayers.ui.UiEvent
+import com.ucfjoe.teamplayers.domain.model.Player
+import com.ucfjoe.teamplayers.domain.model.Team
+import com.ucfjoe.teamplayers.ui.add_edit_team_dialog.AddEditTeamDialog
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun AddEditTeamScreen(
     onPopBackStack: () -> Unit,
-    onNavigate: (UiEvent.Navigate) -> Unit,
     viewModel: AddEditTeamViewModel = hiltViewModel()
 ) {
+    AddEditTeamScreen(
+        onPopBackStack = onPopBackStack,
+        addEditTeamState = viewModel.state.value,
+        //uiEvent = uiEvent.value,
+        onEvent = viewModel::onEvent
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddEditTeamScreen(
+    onPopBackStack: () -> Unit,
+    addEditTeamState: AddEditTeamState,
+    //uiEvent: UiEvent?,
+    onEvent: (AddEditTeamEvent) -> Unit
+) {
     val snackbarHostState = remember { SnackbarHostState() }
-    val keyboardController = LocalSoftwareKeyboardController.current
 
-    LaunchedEffect(key1 = true) {
-        viewModel.uiEvent.collect { event ->
-            when (event) {
-                is UiEvent.PopBackStack -> onPopBackStack()
-
-                is UiEvent.ShowSnackbar -> {
-                    snackbarHostState.showSnackbar(
-                        message = event.message,
-                        actionLabel = event.action
-                    )
-                }
-
-                is UiEvent.Navigate -> onNavigate(event)
-            }
-        }
+    if (addEditTeamState.showEditTeamNameDialog) {
+        AddEditTeamDialog(
+            onDismissRequest = { onEvent(AddEditTeamEvent.OnHideEditTeamNameDialog) },
+            onConfirmRequest = { onEvent(AddEditTeamEvent.OnProcessSaveTeam(it)) },
+            errorMessage = addEditTeamState.saveError,
+            initialName = addEditTeamState.team?.name
+        )
     }
 
     Scaffold(
@@ -88,7 +90,7 @@ fun AddEditTeamScreen(
                 ),
                 title = {
                     Text(
-                        text = getScreenTitle(viewModel.state.value.isEditMode),
+                        text = "Edit Team",
                         style = MaterialTheme.typography.headlineMedium
                             .copy(
                                 fontFamily = FontFamily(Font(R.font.old_sport_college))
@@ -118,125 +120,105 @@ fun AddEditTeamScreen(
                     .fillMaxSize()
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth()
-                )
-                {
-                    TextField(
-                        modifier = Modifier.weight(.70f),
-                        value = viewModel.state.value.nameText,
-                        onValueChange = {
-                            viewModel.onEvent(AddEditTeamEvent.OnNameChanged(it))
-                        },
-                        maxLines = 1,
-                        placeholder = {
-                            Text(text = "Team Name")
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            imeAction = ImeAction.Go,
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onGo = { viewModel.onEvent(AddEditTeamEvent.OnSaveTeamClick) }
-                        ),
-                        isError = viewModel.state.value.saveError != null,
-                        supportingText = {
-                            viewModel.state.value.saveError?.let {
-                                Text(text = it)
-                            }
-                        }
-                    )
-                    Button(
-                        modifier = Modifier
-                            .weight(.30f)
-                            .padding(5.dp),
-
-                        onClick = {
-                            keyboardController?.hide()
-                            viewModel.onEvent(AddEditTeamEvent.OnSaveTeamClick)
-                        },
-                        enabled = viewModel.state.value.enableSave,
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(.84f)
                     ) {
-                        Icon(
-                            getAddEditImageVector(viewModel.state.value.isEditMode),
-                            contentDescription = "AddEditButton"
+                        Text(
+                            text = addEditTeamState.team?.name ?: "",
+                            style = MaterialTheme.typography.headlineMedium,
+                            modifier = Modifier.fillMaxWidth()
                         )
+                    }
+                    Column(
+                        modifier = Modifier.weight(.16f),
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        IconButton(
+                            onClick = { onEvent(AddEditTeamEvent.OnShowEditTeamNameDialog) }
+                        ) {
+                            Icon(Icons.Default.Edit, "Edit team button")
+                        }
                     }
                 }
 
-                if (viewModel.state.value.isEditMode) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TextField(
-                        value = viewModel.state.value.playersText,
-                        onValueChange = {
-                            viewModel.onEvent(AddEditTeamEvent.OnPlayersChanged(it))
-                        },
-                        maxLines = 1,
-                        placeholder = {
-                            Text(text = "Jersey Number")
-                        },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                viewModel.onEvent(AddEditTeamEvent.OnPlayersChangedDone)
-                            }
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onKeyEvent { event ->
-                                when (event.key) {
-                                    Key.Enter -> {
-                                        viewModel.onEvent(AddEditTeamEvent.OnPlayersChangedDone)
-                                        true
-                                    }
-
-                                    else -> false
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = addEditTeamState.playersText,
+                    onValueChange = {
+                        onEvent(AddEditTeamEvent.OnPlayersChanged(it))
+                    },
+                    maxLines = 1,
+                    placeholder = {
+                        Text(text = "Jersey Number")
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            onEvent(AddEditTeamEvent.OnPlayersChangedDone)
+                        }
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onKeyEvent { event ->
+                            when (event.key) {
+                                Key.Enter -> {
+                                    onEvent(AddEditTeamEvent.OnPlayersChangedDone)
+                                    true
                                 }
-                            }
-                    )
-                    Text(
-                        text = "Players",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        style = MaterialTheme.typography.headlineSmall
-                            .copy(
-                                fontFamily = FontFamily(Font(R.font.old_sport_college))
-                            ),
-                        textAlign = TextAlign.Center
-                    )
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = 100.dp),
-                        content = {
-                            items(viewModel.state.value.players.size) { index ->
-                                PlayerItem(
-                                    player = viewModel.state.value.players[index],
-                                    onDeleteClick = {
-                                        viewModel.onEvent(
-                                            AddEditTeamEvent.OnDeletePlayerClick(
-                                                viewModel.state.value.players[index]
-                                            )
-                                        )
-                                    }
-                                )
+
+                                else -> false
                             }
                         }
-                    )
-                }
+                )
+                Text(
+                    text = "Players",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    style = MaterialTheme.typography.headlineSmall
+                        .copy(
+                            fontFamily = FontFamily(Font(R.font.old_sport_college))
+                        ),
+                    textAlign = TextAlign.Center
+                )
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 100.dp),
+                    content = {
+                        items(addEditTeamState.players.size) { index ->
+                            PlayerItem(
+                                player = addEditTeamState.players[index],
+                                onDeleteClick = {
+                                    onEvent(
+                                        AddEditTeamEvent.OnDeletePlayerClick(
+                                            addEditTeamState.players[index]
+                                        )
+                                    )
+                                }
+                            )
+                        }
+                    }
+                )
             }
         }
     }
 }
 
-fun getAddEditImageVector(isEditMode: Boolean): ImageVector {
-    return if (isEditMode) Icons.Default.Edit else Icons.Default.Add
-}
-
-fun getScreenTitle(isEditMode: Boolean): String {
-    return if (isEditMode) "Edit Team" else "Add Team"
-}
-
-// TODO("See what can be done to provided a preview")
 @Preview(showBackground = true)
 @Composable
 fun PreviewAddEditTeamScreen() {
-    AddEditTeamScreen(onPopBackStack = {}, onNavigate = {})
+    AddEditTeamScreen(
+        onPopBackStack = { },
+        addEditTeamState = AddEditTeamState(
+            team = Team(1, "Knights"),
+            players = listOf(
+                Player(1, 1, "10"),
+                Player(1, 1, "23")
+            )
+        ),
+        //uiEvent = null,
+        onEvent = {}
+    )
 }

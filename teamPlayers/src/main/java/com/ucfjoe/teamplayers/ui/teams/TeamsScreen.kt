@@ -1,5 +1,6 @@
 package com.ucfjoe.teamplayers.ui.teams
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,32 +39,43 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ucfjoe.teamplayers.R
-import com.ucfjoe.teamplayers.ui.UiEvent
+import com.ucfjoe.teamplayers.domain.model.Team
+import com.ucfjoe.teamplayers.ui.NavEvent
+import com.ucfjoe.teamplayers.ui.add_edit_team_dialog.AddEditTeamDialog
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeamsScreen(
-    onNavigate: (UiEvent.Navigate) -> Unit,
+    onNavigate: (NavEvent.Navigate) -> Unit,
     viewModel: TeamsViewModel = hiltViewModel()
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val viewModelState = viewModel.state.value
-
-    LaunchedEffect(key1 = true) {
-        viewModel.uiEvent.collect { event ->
+    LaunchedEffect(true) {
+        viewModel.navEvent.collect { event ->
             when (event) {
-                is UiEvent.ShowSnackbar -> {
-                    // TODO("remove if this is not going to be used")
-                    snackbarHostState.showSnackbar(
-                        message = event.message,
-                        actionLabel = event.action
-                    )
-                }
-
-                is UiEvent.Navigate -> onNavigate(event)
-                else -> Unit
+                is NavEvent.Navigate -> onNavigate(event)
+                else -> Log.w("TeamsScreen", "Received unhandled event $event")
             }
         }
+    }
+
+    TeamsScreen(
+        viewModel.state.value,
+        viewModel::onEvent
+    )
+}
+
+@Composable
+fun TeamsScreen(
+    teamsState: TeamsState,
+    onEvent: (TeamsEvent) -> Unit
+) {
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    if (teamsState.showAddTeamDialog) {
+        AddEditTeamDialog(
+            onDismissRequest = { onEvent(TeamsEvent.OnHideAddTeamDialog) },
+            onConfirmRequest = { onEvent(TeamsEvent.OnProcessAddTeamRequest(it)) },
+            errorMessage = teamsState.addTeamErrorMessage
+        )
     }
 
     Box()
@@ -83,7 +94,7 @@ fun TeamsScreen(
                 .padding(vertical = 5.dp, horizontal = 25.dp),
             floatingActionButton = {
                 FloatingActionButton(onClick = {
-                    viewModel.onEvent(TeamsEvent.OnAddTeamClick)
+                    onEvent(TeamsEvent.OnAddTeamClick)
                 }) {
                     Icon(
                         imageVector = Icons.Default.Add,
@@ -92,7 +103,6 @@ fun TeamsScreen(
                 }
             }
         ) { padding ->
-
             Column(
                 modifier = Modifier
                     .padding(padding)
@@ -128,9 +138,9 @@ fun TeamsScreen(
                         horizontalAlignment = Alignment.End
                     ) {
                         // Only show edit toggle IconButton if we have teams that can be edited
-                        if (viewModelState.teams.isNotEmpty()) {
-                            IconButton(onClick = { viewModel.onEvent(TeamsEvent.OnToggleEditMode) }) {
-                                GetEditActionIcon(viewModelState.isEditMode)
+                        if (teamsState.teams.isNotEmpty()) {
+                            IconButton(onClick = { onEvent(TeamsEvent.OnToggleEditMode) }) {
+                                GetEditActionIcon(teamsState.isEditMode)
                             }
                         }
                     }
@@ -144,11 +154,11 @@ fun TeamsScreen(
                         .padding(0.dp, 10.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(viewModelState.teams) { team ->
+                    items(teamsState.teams) { team ->
                         TeamItem(
                             team = team,
-                            onEvent = viewModel::onEvent,
-                            isEditMode = viewModelState.isEditMode,
+                            onEvent = onEvent,
+                            isEditMode = teamsState.isEditMode,
                         )
                     }
                 }
@@ -172,9 +182,15 @@ fun GetEditActionIcon(isEditMode: Boolean) {
     }
 }
 
-// TODO() try to get the preview to work with dependency injection
 @Preview(showBackground = true)
 @Composable
 fun TeamScreenPreview() {
-    TeamsScreen(onNavigate = { })
+    TeamsScreen(
+        teamsState = TeamsState(
+            listOf(
+                Team(1, "Knights"),
+                Team(2, "Seminoles")
+            )
+        ),
+        onEvent = {})
 }

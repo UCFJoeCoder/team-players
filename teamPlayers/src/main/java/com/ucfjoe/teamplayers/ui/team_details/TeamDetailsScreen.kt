@@ -1,5 +1,6 @@
 package com.ucfjoe.teamplayers.ui.team_details
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,31 +34,45 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ucfjoe.teamplayers.R
-import com.ucfjoe.teamplayers.ui.UiEvent
+import com.ucfjoe.teamplayers.domain.model.Game
+import com.ucfjoe.teamplayers.domain.model.Team
+import com.ucfjoe.teamplayers.ui.NavEvent
+import java.time.LocalDateTime
+
+@Composable
+fun TeamDetailsScreen (
+    onPopBackStack: () -> Unit,
+    onNavigate: (NavEvent.Navigate) -> Unit,
+    viewModel: TeamDetailsViewModel = hiltViewModel()
+) {
+    LaunchedEffect(true) {
+        viewModel.navEvent.collect { event ->
+            when (event) {
+                is NavEvent.Navigate -> onNavigate(event)
+                else -> Log.w("TeamDetailsScreen", "Received unhandled event $event")
+            }
+        }
+    }
+
+    TeamDetailsScreen(
+        onPopBackStack = onPopBackStack,
+        teamDetailsState = viewModel.state.value,
+        onEvent = viewModel::onEvent
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeamDetailsScreen(
     onPopBackStack: () -> Unit,
-    onNavigate: (UiEvent.Navigate) -> Unit,
-    viewModel: TeamDetailsViewModel = hiltViewModel()
+    teamDetailsState: TeamDetailsState,
+    onEvent: (TeamDetailsEvent) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-
-    LaunchedEffect(true) {
-        viewModel.uiEvent.collect { event ->
-            when (event) {
-                is UiEvent.Navigate -> onNavigate(event)
-                is UiEvent.PopBackStack -> onPopBackStack()
-                is UiEvent.ShowSnackbar -> {
-                    TODO("Show message on snackbar ${event.message}")
-                }
-            }
-        }
-    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -91,7 +106,7 @@ fun TeamDetailsScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                viewModel.onEvent(TeamDetailsEvent.OnAddGameClick(viewModel.state.value.team.id))
+                onEvent(TeamDetailsEvent.OnAddGameClick(teamDetailsState.team.id))
             }) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -116,7 +131,7 @@ fun TeamDetailsScreen(
                 ) {
                     Column(modifier = Modifier.fillMaxWidth(.5f)) {
                         Text(
-                            text = viewModel.state.value.team.name,
+                            text = teamDetailsState.team.name,
                             modifier = Modifier,
                             style = MaterialTheme.typography.titleLarge
                         )
@@ -126,9 +141,9 @@ fun TeamDetailsScreen(
                         horizontalAlignment = Alignment.End
                     ) {
                         // Only show edit toggle IconButton if we have games that can be edited
-                        if (viewModel.state.value.games.isNotEmpty()) {
-                            IconButton(onClick = { viewModel.onEvent(TeamDetailsEvent.OnToggleEditMode) }) {
-                                GetEditActionIcon(viewModel.state.value.isEditMode)
+                        if (teamDetailsState.games.isNotEmpty()) {
+                            IconButton(onClick = { onEvent(TeamDetailsEvent.OnToggleEditMode) }) {
+                                GetEditActionIcon(teamDetailsState.isEditMode)
                             }
                         }
                     }
@@ -140,11 +155,11 @@ fun TeamDetailsScreen(
                         .padding(0.dp, 10.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(viewModel.state.value.games) { game ->
+                    items(teamDetailsState.games) { game ->
                         GameItem(
                             game = game,
-                            onEvent = viewModel::onEvent,
-                            isEditMode = viewModel.state.value.isEditMode
+                            onEvent = onEvent,
+                            isEditMode = teamDetailsState.isEditMode
                         )
                     }
                 }
@@ -160,4 +175,21 @@ fun GetEditActionIcon(isEditMode: Boolean) {
     } else {
         Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit Mode")
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewTeamDetailsScreen() {
+    TeamDetailsScreen(
+        onPopBackStack = { },
+        teamDetailsState = TeamDetailsState(
+            team = Team(2, "Knights"),
+            games = listOf(
+                Game(1, 2, LocalDateTime.now().minusDays(2)),
+                Game(2, 2, LocalDateTime.now().minusDays(1)),
+                Game(3, 2, LocalDateTime.now())
+            )
+        ),
+        onEvent = {}
+    )
 }

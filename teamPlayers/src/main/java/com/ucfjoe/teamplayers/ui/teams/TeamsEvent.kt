@@ -12,4 +12,8 @@ sealed class TeamsEvent {
 
     data object OnAddTeamClick: TeamsEvent()
 
+    data object OnHideAddTeamDialog: TeamsEvent()
+
+    data class OnProcessAddTeamRequest(val name: String): TeamsEvent()
+
 }

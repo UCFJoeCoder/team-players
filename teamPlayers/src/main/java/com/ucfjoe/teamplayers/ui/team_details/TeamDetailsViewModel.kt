@@ -6,9 +6,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ucfjoe.teamplayers.Screen
-import com.ucfjoe.teamplayers.domain.repository.TeamRepository
 import com.ucfjoe.teamplayers.domain.repository.GameRepository
-import com.ucfjoe.teamplayers.ui.UiEvent
+import com.ucfjoe.teamplayers.domain.repository.TeamRepository
+import com.ucfjoe.teamplayers.ui.NavEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.launchIn
@@ -27,8 +27,8 @@ class TeamDetailsViewModel @Inject constructor(
     private val _state = mutableStateOf(TeamDetailsState())
     val state: State<TeamDetailsState> = _state
 
-    private val _uiEvent = Channel<UiEvent>()
-    val uiEvent = _uiEvent.receiveAsFlow()
+    private val _navEvent = Channel<NavEvent>()
+    val navEvent = _navEvent.receiveAsFlow()
 
     init {
         val paramTeamId: String? = savedStateHandle["team_id"]
@@ -44,13 +44,13 @@ class TeamDetailsViewModel @Inject constructor(
     fun onEvent(event: TeamDetailsEvent) {
         when (event) {
             is TeamDetailsEvent.OnAddGameClick -> {
-                sendUiEvent(UiEvent.Navigate(Screen.AddEditGameScreen.route + "?team_id=${event.teamId}"))
+                sendNavEvent(NavEvent.Navigate(Screen.AddEditGameScreen.route + "?team_id=${event.teamId}"))
             }
 
             is TeamDetailsEvent.OnGameClick -> {
                 val screen =
                     if (state.value.isEditMode) Screen.AddEditGameScreen else Screen.GameDetailsScreen
-                sendUiEvent(UiEvent.Navigate(screen.route + "?team_id=${event.game.teamId}&game_id=${event.game.id}"))
+                sendNavEvent(NavEvent.Navigate(screen.route + "?team_id=${event.game.teamId}&game_id=${event.game.id}"))
             }
 
             is TeamDetailsEvent.OnToggleEditMode -> {
@@ -65,10 +65,9 @@ class TeamDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun sendUiEvent(event: UiEvent) {
+    private fun sendNavEvent(event: NavEvent) {
         viewModelScope.launch {
-            _uiEvent.send(event)
+            _navEvent.send(event)
         }
     }
-
 }

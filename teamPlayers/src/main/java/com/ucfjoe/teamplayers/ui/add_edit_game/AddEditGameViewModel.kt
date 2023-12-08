@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.ucfjoe.teamplayers.domain.model.Game
 import com.ucfjoe.teamplayers.domain.repository.GameRepository
 import com.ucfjoe.teamplayers.domain.repository.TeamRepository
+import com.ucfjoe.teamplayers.ui.NavEvent
 import com.ucfjoe.teamplayers.ui.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -15,7 +16,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import javax.inject.Inject
-
 
 @HiltViewModel
 class AddEditGameViewModel @Inject constructor(
@@ -29,6 +29,9 @@ class AddEditGameViewModel @Inject constructor(
 
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
+
+    private val _navEvent = Channel<NavEvent>()
+    val navEvent = _navEvent.receiveAsFlow()
 
     init {
         val paramTeamId: String? = savedStateHandle["team_id"]
@@ -93,13 +96,19 @@ class AddEditGameViewModel @Inject constructor(
 
             gameRepository.upsertGame(game)
 
-            sendUiEvent(UiEvent.PopBackStack)
+            sendNavEvent(NavEvent.PopBackStack)
         }
     }
 
     private fun sendUiEvent(event: UiEvent) {
         viewModelScope.launch {
             _uiEvent.send(event)
+        }
+    }
+
+    private fun sendNavEvent(event: NavEvent) {
+        viewModelScope.launch {
+            _navEvent.send(event)
         }
     }
 }

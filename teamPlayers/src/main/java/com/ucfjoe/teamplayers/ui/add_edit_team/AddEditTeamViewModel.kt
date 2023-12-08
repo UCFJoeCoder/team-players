@@ -6,17 +6,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ucfjoe.teamplayers.Screen
 import com.ucfjoe.teamplayers.domain.model.Player
 import com.ucfjoe.teamplayers.domain.model.Team
 import com.ucfjoe.teamplayers.domain.repository.PlayerRepository
 import com.ucfjoe.teamplayers.domain.repository.TeamRepository
-import com.ucfjoe.teamplayers.ui.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,24 +26,15 @@ class AddEditTeamViewModel @Inject constructor(
     private val _state = mutableStateOf(AddEditTeamState())
     val state: State<AddEditTeamState> = _state
 
-    private val _uiEvent = Channel<UiEvent>()
-    val uiEvent = _uiEvent.receiveAsFlow()
-
     init {
         val paramTeamId: String? = savedStateHandle["team_id"]
         paramTeamId?.toLong()?.let { teamId ->
             viewModelScope.launch {
-                // TODO(Wait for TeamDetails to implement the usage of the relation to pull data...)
-                // TODO(Switch to relation, so only one database call is made. No need to pull players as a separate call)
-                teamRepository.getTeam(teamId)?.let { team ->
-                    // Store the team in the View Model
+                teamRepository.getTeamWithPlayers(teamId).onEach {
                     _state.value = state.value.copy(
-                        team = team,
-                        nameText = team.name
+                        team = it.team,
+                        players = it.players.sorted()
                     )
-                }
-                playerRepository.getTeamPlayers(teamId).onEach { players ->
-                    _state.value = state.value.copy(players = players.sorted())
                 }.launchIn(viewModelScope)
             }
         }
@@ -55,13 +42,6 @@ class AddEditTeamViewModel @Inject constructor(
 
     fun onEvent(event: AddEditTeamEvent) {
         when (event) {
-            is AddEditTeamEvent.OnNameChanged -> {
-                _state.value = state.value.copy(
-                    nameText = event.name,
-                    saveError = null
-                )
-            }
-
             is AddEditTeamEvent.OnPlayersChanged -> {
                 val playersText = event.players
                 _state.value = state.value.copy(playersText = playersText)
@@ -76,16 +56,24 @@ class AddEditTeamViewModel @Inject constructor(
                 processJerseyNumber()
             }
 
-            is AddEditTeamEvent.OnSaveTeamClick -> {
-                processOnSaveTeamClick()
-            }
-
             is AddEditTeamEvent.OnDeletePlayerClick -> {
                 viewModelScope.launch {
                     // Should we display a confirmation dialog? I kind of like that the player just
                     // deletes. They are easy to create again... if deleted in error.
                     playerRepository.deletePlayer(event.player)
                 }
+            }
+
+            is AddEditTeamEvent.OnProcessSaveTeam -> {
+                processOnSaveTeamClick(event.name)
+            }
+
+            AddEditTeamEvent.OnHideEditTeamNameDialog -> {
+                _state.value = state.value.copy(showEditTeamNameDialog = false)
+            }
+
+            AddEditTeamEvent.OnShowEditTeamNameDialog -> {
+                _state.value = state.value.copy(showEditTeamNameDialog = true, saveError = null)
             }
         }
     }
@@ -103,45 +91,43 @@ class AddEditTeamViewModel @Inject constructor(
         _state.value = state.value.copy(playersText = "")
     }
 
-    private fun processOnSaveTeamClick() {
+    private fun processOnSaveTeamClick(name: String) {
         viewModelScope.launch {
+
             // Make sure the data is valid before upsert
-            if (state.value.nameText.isBlank()) {
-                _state.value = state.value.copy(saveError = "Name cannot be empty")
+            if (name.isBlank()) {
+                _state.value = state.value.copy(saveError = "Name cannot be empty!")
                 return@launch
             }
+
+            // Make sure the name has changed
+            if (state.value.team!!.name == name.trim()) {
+                // The name didn't change
+                return@launch
+            }
+
             // Check for a duplicate Team name. If Editing then perform Case Sensitive search
-            val count = if (state.value.isEditMode)
-                teamRepository.getTeamsWithNameCaseSensitive(state.value.nameText.trim())
-            else // If not editing, (aka. we are inserting), then perform case insensitive search
-                teamRepository.getTeamsWithName(state.value.nameText.trim())
+            val count = teamRepository.getTeamsWithNameCaseSensitive(name.trim())
+
 
             if (count > 0) {
-                _state.value = state.value.copy(saveError = "Duplicate name detected.")
+                _state.value = state.value.copy(saveError = "Duplicate name detected!")
                 return@launch
             }
             // Insert or update the entity in repository.
             val upsertTeam = Team(
-                name = state.value.nameText.trim(),
+                name = name.trim(),
                 id = state.value.team?.id ?: 0
             )
-            val id = teamRepository.upsertTeam(upsertTeam)
 
-            // If we just inserted then reload this Composable in edit mode with new teamId
-            if (!state.value.isEditMode) {
-                sendUiEvent(UiEvent.PopBackStack)
-                sendUiEvent(UiEvent.Navigate(Screen.AddEditTeamScreen.route + "?team_id=${id}"))
-            } else {
-                // At this point the team stored in the state is out of sync with the database
-                // So, I am updating the state with the upsertTeam
-                _state.value = state.value.copy(team = upsertTeam, nameText = upsertTeam.name)
-            }
+            teamRepository.upsertTeam(upsertTeam)
+
+            _state.value = state.value.copy(
+                team = upsertTeam,
+                showEditTeamNameDialog = false
+            )
         }
     }
-
-//    private fun sendUiMessage(message: String) {
-//        sendUiEvent(UiEvent.ShowSnackbar(message))
-//    }
 
     private suspend fun addNewPlayer(teamId: Long, jerseyNumber: String) {
         val p = Player(
@@ -167,12 +153,4 @@ class AddEditTeamViewModel @Inject constructor(
         }
         return null
     }
-
-        private fun sendUiEvent(event: UiEvent) {
-            viewModelScope.launch {
-                _uiEvent.send(event)
-            }
-        }
 }
-
-

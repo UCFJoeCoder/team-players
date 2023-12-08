@@ -85,7 +85,8 @@ fun TeamItem(
         openConfirmDialog.value -> {
             ConfirmDialog(
                 dialogTitle = "Delete ${team.name}?",
-                dialogText = "Delete the ${team.name} team and all of its players?",
+                dialogText = "Delete the ${team.name} team and all of its related data.?\n\n" +
+                        "This action cannot be undone!",
                 onDismissRequest = { openConfirmDialog.value = false },
                 onConfirmRequest = {
                     openConfirmDialog.value = false

@@ -28,14 +28,14 @@ import java.util.concurrent.TimeUnit
 fun DatePickerDialog(
     onDismissRequest: () -> Unit,
     onConfirmRequest: (date: LocalDate) -> Unit,
-    date: LocalDate? = null
+    initialDate: LocalDate? = null
 ) {
-    val initialDate = (date ?: LocalDate.now())
-    val initialDateMillis = TimeUnit.DAYS.toMillis(initialDate.toEpochDay()) //* 24 * 60 * 60 * 1000
+    val date = (initialDate ?: LocalDate.now())
+    val dateMillis = TimeUnit.DAYS.toMillis(date.toEpochDay()) //* 24 * 60 * 60 * 1000
 
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = initialDateMillis,
-        yearRange = (initialDate.year..(initialDate.year + 2))
+        initialSelectedDateMillis = dateMillis,
+        yearRange = (date.year..(date.year + 2))
     )
 
     val selectedDate = datePickerState.selectedDateMillis!!.let {

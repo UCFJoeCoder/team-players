@@ -25,13 +25,13 @@ import java.time.LocalTime
 fun TimePickerDialog(
     onDismissRequest: () -> Unit,
     onConfirmRequest: (date: LocalTime) -> Unit,
-    localTime: LocalTime? = null
+    initialTime: LocalTime? = null
 ) {
-    val initialDateTime = localTime ?: LocalTime.now()
+    val localTime = initialTime ?: LocalTime.now()
 
     val timePickerState = rememberTimePickerState(
-        initialHour = initialDateTime.hour,
-        initialMinute = initialDateTime.minute,
+        initialHour = localTime.hour,
+        initialMinute = localTime.minute,
         is24Hour = false
     )
 

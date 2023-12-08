@@ -1,5 +1,6 @@
 package com.ucfjoe.teamplayers.ui.add_edit_game
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,54 +30,71 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ucfjoe.teamplayers.R
+import com.ucfjoe.teamplayers.domain.model.Team
+import com.ucfjoe.teamplayers.ui.NavEvent
 import com.ucfjoe.teamplayers.ui.UiEvent
 import com.ucfjoe.teamplayers.ui.formatLocalizedDate
 import com.ucfjoe.teamplayers.ui.formatLocalizedTime
+
+@Composable
+fun AddEditGameScreen(
+    onPopBackStack: () -> Unit,
+    onNavigate: (NavEvent.Navigate) -> Unit,
+    viewModel: AddEditGameViewModel = hiltViewModel()
+) {
+    LaunchedEffect(true) {
+        viewModel.navEvent.collect { event ->
+            when (event) {
+                is NavEvent.Navigate -> onNavigate(event)
+                is NavEvent.PopBackStack -> onPopBackStack()
+            }
+        }
+    }
+
+    val uiEvent = viewModel.uiEvent.collectAsStateWithLifecycle(initialValue = null)
+
+    AddEditGameScreen(
+        onPopBackStack = onPopBackStack,
+        addEditGameState = viewModel.state.value,
+        uiEvent = uiEvent.value,
+        onEvent = viewModel::onEvent)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditGameScreen(
     onPopBackStack: () -> Unit,
-    onNavigate: (UiEvent.Navigate) -> Unit,
-    viewModel: AddEditGameViewModel = hiltViewModel()
+    addEditGameState: AddEditGameState,
+    uiEvent: UiEvent?,
+    onEvent: (AddEditGameEvent) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
-    if (viewModel.state.value.showDatePicker) {
+    if (addEditGameState.showDatePicker) {
         DatePickerDialog(
-            onDismissRequest = { viewModel.onEvent(AddEditGameEvent.OnHideDatePicker) },
-            onConfirmRequest = {
-                viewModel.onEvent(AddEditGameEvent.OnDateChanged(it))
-            },
-            date = viewModel.state.value.date
+            onDismissRequest = { onEvent(AddEditGameEvent.OnHideDatePicker) },
+            onConfirmRequest = { onEvent(AddEditGameEvent.OnDateChanged(it)) },
+            initialDate = addEditGameState.date
         )
     }
 
-    if (viewModel.state.value.showTimePicker) {
+    if (addEditGameState.showTimePicker) {
         TimePickerDialog(
-            onDismissRequest = { viewModel.onEvent(AddEditGameEvent.OnHideTimePicker) },
+            onDismissRequest = { onEvent(AddEditGameEvent.OnHideTimePicker) },
             onConfirmRequest = {
-                viewModel.onEvent(AddEditGameEvent.OnTimeChanged(it))
+                onEvent(AddEditGameEvent.OnTimeChanged(it))
             },
-            localTime = viewModel.state.value.time
+            initialTime = addEditGameState.time
         )
     }
 
-    LaunchedEffect(key1 = true) {
-        viewModel.uiEvent.collect { event ->
-            when (event) {
-                is UiEvent.PopBackStack -> onPopBackStack()
-
-                is UiEvent.Navigate -> onNavigate(event)
-
-                else -> {
-                    println("Unhandled event ${event}")
-                }
-            }
-        }
+    LaunchedEffect(key1 = uiEvent) {
+        Log.w("AddEditGameScreen", "Unhandled event ${uiEvent}")
     }
 
     Scaffold(
@@ -84,7 +102,7 @@ fun AddEditGameScreen(
         modifier = Modifier.fillMaxWidth(),
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                viewModel.onEvent(AddEditGameEvent.OnSaveGameClick)
+                onEvent(AddEditGameEvent.OnSaveGameClick)
             }) {
                 Icon(
                     imageVector = Icons.Default.Check,
@@ -101,7 +119,8 @@ fun AddEditGameScreen(
                     actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
                 title = {
-                    Text(text = getScreenTitle(viewModel.state.value.isEditMode),
+                    Text(
+                        text = getScreenTitle(addEditGameState.isEditMode),
                         style = MaterialTheme.typography.headlineMedium
                             .copy(
                                 fontFamily = FontFamily(Font(R.font.old_sport_college))
@@ -130,7 +149,7 @@ fun AddEditGameScreen(
                     .fillMaxSize()
             ) {
                 Text(
-                    text = viewModel.state.value.team?.name ?: "",
+                    text = addEditGameState.team?.name ?: "",
                     modifier = Modifier,
                     style = MaterialTheme.typography.titleLarge
                 )
@@ -143,14 +162,14 @@ fun AddEditGameScreen(
                 ) {
                     Column(Modifier.fillMaxWidth(.5f)) {
                         Text(
-                            text = viewModel.state.value.date.formatLocalizedDate()
+                            text = addEditGameState.date.formatLocalizedDate()
                         )
                     }
                     Column(
                         Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.End
                     ) {
-                        Button(onClick = { viewModel.onEvent(AddEditGameEvent.OnShowDatePicker) }) {
+                        Button(onClick = { onEvent(AddEditGameEvent.OnShowDatePicker) }) {
                             Text(
                                 "Select Date"
                             )
@@ -165,14 +184,14 @@ fun AddEditGameScreen(
                 ) {
                     Column(Modifier.fillMaxWidth(.5f)) {
                         Text(
-                            text = viewModel.state.value.time.formatLocalizedTime()
+                            text = addEditGameState.time.formatLocalizedTime()
                         )
                     }
                     Column(
                         Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.End
                     ) {
-                        Button(onClick = { viewModel.onEvent(AddEditGameEvent.OnShowTimePicker) }) {
+                        Button(onClick = { onEvent(AddEditGameEvent.OnShowTimePicker) }) {
                             Text(
                                 "Select Time"
                             )
@@ -186,4 +205,18 @@ fun AddEditGameScreen(
 
 fun getScreenTitle(isEditMode: Boolean): String {
     return if (isEditMode) "Edit Game" else "Add Game"
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewAddEditGameScreen() {
+    AddEditGameScreen(
+        onPopBackStack = { },
+        addEditGameState = AddEditGameState(
+            teamId = 0,
+            team = Team(1, "Knights")
+        ),
+        uiEvent = null,
+        onEvent = {}
+    )
 }
