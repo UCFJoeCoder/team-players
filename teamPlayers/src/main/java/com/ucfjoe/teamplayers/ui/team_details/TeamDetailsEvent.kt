@@ -12,4 +12,5 @@ sealed class TeamDetailsEvent {
 
     data class OnDeleteGameClick(val game: Game): TeamDetailsEvent()
 
+    data object OnEditTeamClick : TeamDetailsEvent()
 }

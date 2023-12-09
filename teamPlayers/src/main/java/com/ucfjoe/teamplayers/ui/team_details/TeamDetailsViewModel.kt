@@ -62,6 +62,10 @@ class TeamDetailsViewModel @Inject constructor(
                     gameRepository.deleteGame(event.game)
                 }
             }
+
+            is TeamDetailsEvent.OnEditTeamClick -> {
+                sendNavEvent(NavEvent.Navigate(Screen.AddEditTeamScreen.route + "?team_id=${state.value.team.id}"))
+            }
         }
     }
 

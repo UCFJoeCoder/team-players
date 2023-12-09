@@ -3,9 +3,9 @@ package com.ucfjoe.teamplayers.ui.game_details
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,7 +42,7 @@ fun GameDetailsDropDownMenu(
                 )
             }
         )
-        HorizontalDivider()
+        Divider()
         DropdownMenuItem(
             text = {
                 Text(
@@ -61,7 +61,7 @@ fun GameDetailsDropDownMenu(
                 )
             }
         )
-        HorizontalDivider()
+        Divider()
         DropdownMenuItem(
             text = {
                 Text(
@@ -77,7 +77,7 @@ fun GameDetailsDropDownMenu(
                 Icon(imageVector = Icons.Default.Share, contentDescription = "Share game results")
             }
         )
-        HorizontalDivider()
+        Divider()
         DropdownMenuItem(
             text = {
                 Text(

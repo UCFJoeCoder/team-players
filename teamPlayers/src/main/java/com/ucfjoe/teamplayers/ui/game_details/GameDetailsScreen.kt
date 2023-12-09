@@ -12,14 +12,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -152,7 +151,7 @@ fun GameDetailsScreen(
                 navigationIcon = {
                     IconButton(onClick = { onPopBackStack() }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            painterResource(id = R.drawable.arrow_back_fill_24),
                             contentDescription = "Go back"
                         )
                     }
@@ -187,7 +186,7 @@ fun GameDetailsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
-                HorizontalDivider()
+                Divider()
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

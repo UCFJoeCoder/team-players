@@ -14,7 +14,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -83,7 +83,7 @@ fun GameDetailsHelpDialog(
                             )
                         }
                     }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.secondaryContainer)
+                    Divider(color = MaterialTheme.colorScheme.secondaryContainer)
                     Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(6.dp)) {
                         Column(Modifier.fillMaxWidth(.4f)) {
                             OutlinedButton(onClick = { }) {
@@ -101,7 +101,7 @@ fun GameDetailsHelpDialog(
                             )
                         }
                     }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.secondaryContainer)
+                    Divider(color = MaterialTheme.colorScheme.secondaryContainer)
                     Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(6.dp)) {
                         Column(Modifier.fillMaxWidth(.4f)) {
                             OutlinedButton(
@@ -118,7 +118,7 @@ fun GameDetailsHelpDialog(
                             )
                         }
                     }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.secondaryContainer)
+                    Divider(color = MaterialTheme.colorScheme.secondaryContainer)
                     Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(6.dp)) {
                         Column(Modifier.fillMaxWidth(.4f)) {
                             Icon(
@@ -135,7 +135,7 @@ fun GameDetailsHelpDialog(
                             )
                         }
                     }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.secondaryContainer)
+                    Divider(color = MaterialTheme.colorScheme.secondaryContainer)
                     Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(6.dp)) {
                         Column(Modifier.fillMaxWidth(.4f)) {
                             Icon(
@@ -151,7 +151,7 @@ fun GameDetailsHelpDialog(
                             )
                         }
                     }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.secondaryContainer)
+                    Divider(color = MaterialTheme.colorScheme.secondaryContainer)
                     Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(6.dp)) {
                         Column(Modifier.fillMaxWidth(.4f)) {
                             Icon(imageVector = Icons.Default.Share, contentDescription = "Share game results")
