@@ -25,11 +25,11 @@ interface TeamDao {
     @Query("SELECT * FROM teams ORDER BY UPPER(name) ASC")
     fun getTeams(): Flow<List<TeamEntity>>
 
-    @Query("SELECT COUNT(*) FROM teams where UPPER(name)=UPPER(:name)")
+    @Query("SELECT COUNT(*) FROM teams WHERE UPPER(name)=UPPER(:name)")
     suspend fun getTeamsWithName(name: String): Int
 
-    @Query("SELECT COUNT(*) FROM teams where name=:name")
-    suspend fun getTeamsWithNameCaseSensitive(name: String): Int
+    @Query("SELECT COUNT(*) FROM teams WHERE UPPER(name)=UPPER(:name) AND id!=:id")
+    suspend fun getTeamsWithNameWithoutId(name: String, id: Long): Int
 
     @Transaction
     @Query("SELECT * FROM teams WHERE id=:teamId")

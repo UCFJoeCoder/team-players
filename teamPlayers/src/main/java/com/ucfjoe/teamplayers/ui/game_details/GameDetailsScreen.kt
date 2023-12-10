@@ -49,6 +49,8 @@ import com.ucfjoe.teamplayers.ui.UiEvent
 import com.ucfjoe.teamplayers.ui.core.ConfirmDialog
 import com.ucfjoe.teamplayers.ui.core.ObserveAsEvents
 import com.ucfjoe.teamplayers.ui.formatLocalizedDateTime
+import com.ucfjoe.teamplayers.ui.game_details.dialogs.EditPlayerDialog
+import com.ucfjoe.teamplayers.ui.game_details.dialogs.GameDetailsHelpDialog
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.time.LocalDateTime
@@ -122,7 +124,9 @@ fun GameDetailsScreen(
     if (gameDetailsState.showEditPlayerDialog) {
         EditPlayerDialog(
             onDismissRequest = { onEvent(GameDetailsEvent.OnHideEditPlayerDialog) },
-            onConfirmRequest = { onEvent(GameDetailsEvent.OnProcessEditPlayerRequest(it)) },
+            onConfirmRequest = { editPlayer ->
+                onEvent(GameDetailsEvent.OnProcessEditPlayerRequest(editPlayer))
+            },
             editPlayer = gameDetailsState.editPlayer!!,
             errorMessage = gameDetailsState.editErrorMessage
         )

@@ -21,4 +21,7 @@ interface PlayerDao {
 
     @Query("SELECT * FROM players WHERE team_id = :teamId ORDER BY jersey_number ASC")
     fun getTeamPlayers(teamId:Long): Flow<List<PlayerEntity>>
+
+    @Query("SELECT COUNT(*) FROM players WHERE team_id = :teamId AND jersey_number=:jerseyNumber")
+    suspend fun getNumberOfPlayersWithJerseyNumber(teamId: Long, jerseyNumber: String) : Int
 }

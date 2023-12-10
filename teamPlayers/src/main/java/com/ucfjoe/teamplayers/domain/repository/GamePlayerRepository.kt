@@ -15,6 +15,12 @@ interface GamePlayerRepository {
 
     fun getGamePlayers(gameId: Long): Flow<List<GamePlayer>>
 
-    suspend fun insertGamePlayersFromTeamPlayers(gameId:Long, teamId:Long)
+    suspend fun insertGamePlayersFromTeamPlayers(gameId: Long, teamId: Long)
+
+    suspend fun getNumberOfPlayersWithJerseyNumber(
+        playerId: Long,
+        gameId: Long,
+        jerseyNumber: String
+    ): Int
 
 }

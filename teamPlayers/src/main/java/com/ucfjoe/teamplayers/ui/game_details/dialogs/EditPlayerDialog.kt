@@ -1,16 +1,12 @@
-package com.ucfjoe.teamplayers.ui.game_details
+package com.ucfjoe.teamplayers.ui.game_details.dialogs
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Checkbox
@@ -29,8 +25,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,7 +48,7 @@ fun PreviewEditPlayerDialog() {
 @Composable
 fun EditPlayerDialog(
     onDismissRequest: () -> Unit,
-    onConfirmRequest: (player: GamePlayer) -> Unit,
+    onConfirmRequest: (editPlayer: GamePlayer) -> Unit,
     editPlayer: GamePlayer,
     errorMessage: String? = null
 ) {
@@ -62,12 +56,12 @@ fun EditPlayerDialog(
     var editCount by remember { mutableStateOf(editPlayer.count) }
     var editIsAbsent by remember { mutableStateOf(editPlayer.isAbsent) }
 
-    fun processEditCount(action: EditAction) {
-        if (action == EditAction.ADD) {
-            if (editCount + 1 <= 100) editCount++
-        } else {
-            if (editCount - 1 >= 0) editCount--
-        }
+    fun processAdd(){
+        if (editCount + 1 <= 100) editCount++
+    }
+
+    fun processSubtract(){
+        if (editCount -1 >= 0) editCount--
     }
 
     Dialog(onDismissRequest = onDismissRequest) {
@@ -82,9 +76,9 @@ fun EditPlayerDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(text = "Edit Player", style = MaterialTheme.typography.headlineSmall)
-                if (errorMessage.isNullOrBlank().not()) {
+                if (!errorMessage.isNullOrBlank()) {
                     Text(
-                        text = errorMessage!!,
+                        text = errorMessage,
                         modifier = Modifier.fillMaxWidth(),
                         color = MaterialTheme.colorScheme.error,
                         textAlign = TextAlign.Center
@@ -123,14 +117,14 @@ fun EditPlayerDialog(
                         horizontalAlignment = Alignment.End
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(onClick = { processEditCount(EditAction.SUBTRACT) }) {
+                            IconButton(onClick = { processSubtract() }) {
                                 Icon(
                                     painter = painterResource(R.drawable.remove_fill_24),
                                     contentDescription = "Remove"
                                 )
                             }
                             Text("$editCount")
-                            IconButton(onClick = { processEditCount(EditAction.ADD) }) {
+                            IconButton(onClick = { processAdd() }) {
                                 Icon(Icons.Default.Add, "Add")
                             }
                         }
@@ -175,8 +169,4 @@ fun EditPlayerDialog(
             }
         }
     }
-}
-
-private enum class EditAction {
-    ADD, SUBTRACT
 }

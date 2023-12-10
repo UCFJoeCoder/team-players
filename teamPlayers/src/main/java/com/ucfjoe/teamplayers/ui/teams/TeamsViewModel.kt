@@ -6,8 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ucfjoe.teamplayers.Screen
-import com.ucfjoe.teamplayers.domain.model.Team
-import com.ucfjoe.teamplayers.domain.repository.TeamRepository
+import com.ucfjoe.teamplayers.common.Resource
+import com.ucfjoe.teamplayers.domain.use_case.TeamsUseCases
 import com.ucfjoe.teamplayers.ui.NavEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TeamsViewModel @Inject constructor(
-    private val teamRepository: TeamRepository
+    private val teamsUseCases: TeamsUseCases
 ) : ViewModel() {
 
     private val _state = mutableStateOf(TeamsState())
@@ -29,13 +29,18 @@ class TeamsViewModel @Inject constructor(
     val navEvent = _navEvent.receiveAsFlow()
 
     init {
-        loadTeams()
+        viewModelScope.launch() {
+            teamsUseCases.getTeamsUseCase().onEach { teams ->
+                _state.value = state.value.copy(teams = teams)
+            }.launchIn(viewModelScope)
+        }
     }
 
     fun onEvent(event: TeamsEvent) {
         when (event) {
             is TeamsEvent.OnAddTeamClick -> {
-                _state.value = state.value.copy(showAddTeamDialog = true, addTeamErrorMessage = null)
+                _state.value =
+                    state.value.copy(showAddTeamDialog = true, addTeamErrorMessage = null)
             }
 
             is TeamsEvent.OnHideAddTeamDialog -> {
@@ -47,19 +52,18 @@ class TeamsViewModel @Inject constructor(
             }
 
             is TeamsEvent.OnTeamClick -> {
-                Log.e("TeamsViewModel", "OnTeamClick")
                 val screen =
                     if (state.value.isEditMode) Screen.AddEditTeamScreen else Screen.TeamDetailsScreen
                 sendNavEvent(NavEvent.Navigate(screen.route + "?team_id=${event.team.id}"))
             }
 
             is TeamsEvent.OnToggleEditMode -> {
-                _state.value = state.value.copy(isEditMode = state.value.isEditMode.not())
+                _state.value = state.value.copy(isEditMode = !state.value.isEditMode)
             }
 
             is TeamsEvent.OnDeleteClick -> {
                 viewModelScope.launch {
-                    teamRepository.deleteTeam(event.team)
+                    teamsUseCases.deleteTeamUseCase(event.team)
                 }
             }
         }
@@ -67,35 +71,16 @@ class TeamsViewModel @Inject constructor(
 
     private fun processAddTeamRequest(name: String) {
         viewModelScope.launch {
-            // Make sure the data is valid before upsert
-            if (name.isBlank()) {
-                _state.value = state.value.copy(addTeamErrorMessage = "Name cannot be empty!")
-                return@launch
+            when (val result = teamsUseCases.addTeamUseCase(name)) {
+                is Resource.Success -> {
+                    _state.value = state.value.copy(showAddTeamDialog = false)
+                    sendNavEvent(NavEvent.Navigate(route = Screen.AddEditTeamScreen.route + "?team_id=${result.data!!.id}"))
+                }
+
+                is Resource.Error -> {
+                    _state.value = state.value.copy(addTeamErrorMessage = result.message)
+                }
             }
-
-            // Perform case insensitive search
-            val count = teamRepository.getTeamsWithName(name.trim())
-
-            if (count > 0) {
-                _state.value = state.value.copy(addTeamErrorMessage = "Duplicate name detected!")
-                return@launch
-            }
-            // Insert or update the entity in repository.
-            val upsertTeam = Team(name = name.trim())
-
-            val id = teamRepository.upsertTeam(upsertTeam)
-
-            _state.value = state.value.copy(showAddTeamDialog = false)
-
-            sendNavEvent(NavEvent.Navigate(Screen.AddEditTeamScreen.route + "?team_id=${id}"))
-        }
-    }
-
-    private fun loadTeams() {
-        viewModelScope.launch() {
-            teamRepository.getTeams().onEach { teams ->
-                _state.value = state.value.copy(teams = teams)
-            }.launchIn(viewModelScope)
         }
     }
 

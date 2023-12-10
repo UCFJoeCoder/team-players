@@ -17,7 +17,9 @@ interface TeamRepository {
 
     suspend fun getTeamsWithName(name: String): Int
 
-    suspend fun getTeamsWithNameCaseSensitive(name: String): Int
+    suspend fun getTeamsWithNameWithoutId(name: String, id: Long): Int
+
+    //suspend fun getTeamsWithNameCaseSensitive(name: String): Int
 
     fun getTeamWithGames(teamId: Long): Flow<TeamWithGames>
 

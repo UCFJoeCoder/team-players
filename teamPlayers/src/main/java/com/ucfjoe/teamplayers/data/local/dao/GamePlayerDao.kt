@@ -26,8 +26,19 @@ interface GamePlayerDao {
     fun getGamePlayers(gameId: Long): Flow<List<GamePlayerEntity>>
 
 
-    @Query("INSERT INTO game_players (game_id, jersey_number, count, is_absent)" +
-            "SELECT :gameId, jersey_number, 0, 0 FROM players WHERE team_id=:teamId")
-    suspend fun insertGamePlayersFromTeamPlayers(gameId:Long, teamId:Long)
+    @Query(
+        "INSERT INTO game_players (game_id, jersey_number, count, is_absent)" +
+                "SELECT :gameId, jersey_number, 0, 0 FROM players WHERE team_id=:teamId"
+    )
+    suspend fun insertGamePlayersFromTeamPlayers(gameId: Long, teamId: Long)
 
+    @Query(
+        "SELECT COUNT(*) FROM game_players " +
+                "WHERE game_id = :gameId AND id != :playerId AND UPPER(jersey_number) = UPPER(:jerseyNumber)"
+    )
+    suspend fun getNumberOfPlayersWithJerseyNumber(
+        playerId: Long,
+        gameId: Long,
+        jerseyNumber: String
+    ): Int
 }

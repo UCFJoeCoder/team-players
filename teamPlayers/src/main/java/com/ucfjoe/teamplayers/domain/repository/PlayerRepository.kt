@@ -12,4 +12,6 @@ interface PlayerRepository {
     suspend fun deletePlayerByJerseyNumber(teamId: Long, jerseyNumber: String)
 
     fun getTeamPlayers(teamId: Long): Flow<List<Player>>
+
+    suspend fun getNumberOfPlayersWithJerseyNumber(teamId: Long, jerseyNumber: String) : Int
 }

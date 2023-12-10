@@ -8,7 +8,7 @@ sealed class EditTeamEvent {
     data object OnShowEditTeamNameDialog : EditTeamEvent()
     data object OnHideEditTeamNameDialog : EditTeamEvent()
 
-    data class OnPlayersChanged(val players: String) : EditTeamEvent()
+    data class OnPlayersChanged(val playersText: String) : EditTeamEvent()
     data object OnPlayersChangedDone : EditTeamEvent()
     data class OnDeletePlayerClick(val player: Player) : EditTeamEvent()
 }

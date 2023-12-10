@@ -12,7 +12,7 @@ sealed class GameDetailsEvent {
 
     data class OnEditPlayerClick(val player: GamePlayer) : GameDetailsEvent()
     data object OnHideEditPlayerDialog : GameDetailsEvent()
-    data class OnProcessEditPlayerRequest(val player: GamePlayer) : GameDetailsEvent()
+    data class OnProcessEditPlayerRequest(val editPlayer: GamePlayer) : GameDetailsEvent()
 
     data object OnRequestImportPlayers : GameDetailsEvent()
     data object OnDismissImportDialog : GameDetailsEvent()

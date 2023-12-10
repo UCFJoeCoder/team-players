@@ -32,8 +32,8 @@ fun PlayerItem(
                 onLongClick = { onEditPlayerClick() }
             ),
         colors = CardDefaults.cardColors(
-            containerColor = getPlayerStatusContainerColor(player.getStatus()),
-            contentColor = getPlayerStatusContentColor(player.getStatus())
+            containerColor = getContainerColor(player.getStatus()),
+            contentColor = getContentColor(player.getStatus())
         )
     ) {
         Column(
@@ -50,19 +50,21 @@ fun PlayerItem(
 }
 
 @Composable
-fun getPlayerStatusContainerColor(playerStatus: PlayerStatus): Color {
+private fun getContainerColor(playerStatus: PlayerStatus): Color {
     return when (playerStatus) {
-        PlayerStatus.COMPLETED -> MaterialTheme.colorScheme.primaryContainer
+        PlayerStatus.DISABLED -> MaterialTheme.colorScheme.surfaceVariant
         PlayerStatus.NORMAL -> MaterialTheme.colorScheme.secondaryContainer
         PlayerStatus.SELECTED -> MaterialTheme.colorScheme.tertiaryContainer
+        PlayerStatus.COMPLETED -> MaterialTheme.colorScheme.primaryContainer
     }
 }
 
 @Composable
-fun getPlayerStatusContentColor(playerStatus: PlayerStatus): Color {
+private fun getContentColor(playerStatus: PlayerStatus): Color {
     return when (playerStatus) {
-        PlayerStatus.COMPLETED -> MaterialTheme.colorScheme.onPrimaryContainer
+        PlayerStatus.DISABLED -> MaterialTheme.colorScheme.outline
         PlayerStatus.NORMAL -> MaterialTheme.colorScheme.onSecondaryContainer
         PlayerStatus.SELECTED -> MaterialTheme.colorScheme.onTertiaryContainer
+        PlayerStatus.COMPLETED -> MaterialTheme.colorScheme.onPrimaryContainer
     }
 }

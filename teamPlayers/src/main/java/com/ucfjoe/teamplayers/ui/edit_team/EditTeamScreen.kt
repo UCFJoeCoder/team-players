@@ -1,6 +1,5 @@
 package com.ucfjoe.teamplayers.ui.edit_team
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -72,7 +71,7 @@ fun EditTeamScreen(
         AddEditTeamDialog(
             onDismissRequest = { onEvent(EditTeamEvent.OnHideEditTeamNameDialog) },
             onConfirmRequest = { onEvent(EditTeamEvent.OnProcessSaveTeam(it)) },
-            errorMessage = editTeamState.saveError,
+            errorMessage = editTeamState.saveTeamError,
             initialName = editTeamState.team?.name
         )
     }
@@ -150,10 +149,12 @@ fun EditTeamScreen(
                     onValueChange = {
                         onEvent(EditTeamEvent.OnPlayersChanged(it))
                     },
-                    maxLines = 1,
+                    singleLine = true,
                     placeholder = {
                         Text(text = "Jersey Number")
                     },
+                    isError = !editTeamState.savePlayerError.isNullOrBlank(),
+                    supportingText = { editTeamState.savePlayerError?.let { Text(it) } },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(
                         onDone = {

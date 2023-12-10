@@ -27,4 +27,11 @@ class PlayerRepositoryImpl @Inject constructor(
     override fun getTeamPlayers(teamId: Long): Flow<List<Player>> {
         return playerDao.getTeamPlayers(teamId).map { list -> list.map { it.toPlayer() } }
     }
+
+    override suspend fun getNumberOfPlayersWithJerseyNumber(
+        teamId: Long,
+        jerseyNumber: String
+    ): Int {
+        return playerDao.getNumberOfPlayersWithJerseyNumber(teamId, jerseyNumber)
+    }
 }

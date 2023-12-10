@@ -36,4 +36,12 @@ class GamePlayerRepositoryImpl @Inject constructor(
         deleteGamePlayers(gameId)
         gamePlayerDao.insertGamePlayersFromTeamPlayers(gameId, teamId)
     }
+
+    override suspend fun getNumberOfPlayersWithJerseyNumber(
+        playerId: Long,
+        gameId: Long,
+        jerseyNumber: String
+    ): Int {
+        return gamePlayerDao.getNumberOfPlayersWithJerseyNumber(playerId, gameId, jerseyNumber)
+    }
 }

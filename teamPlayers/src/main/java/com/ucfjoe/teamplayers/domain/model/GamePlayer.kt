@@ -12,6 +12,7 @@ data class GamePlayer(
     // TODO (Move the number 8 out and make it configurable)
     fun getStatus(): PlayerStatus {
         return when {
+            isAbsent -> PlayerStatus.DISABLED
             isSelected -> PlayerStatus.SELECTED
             count >= 8 -> PlayerStatus.COMPLETED
             else -> PlayerStatus.NORMAL
@@ -23,6 +24,8 @@ data class GamePlayer(
      *
      * Compares two Game Players by their JerseyNumber. Rules are, numbers are compared as numbers and come before strings, which are compared as strings.
      *
+     * Players marked as absent are sorted last
+     *
      * Example list ["AA", "01", "1", "10", "2", "BB", "1A", "20"]
      * When sorted becomes ["01", "1", "2", "10", "20", "1A", "AA", "BB"]
      *
@@ -33,11 +36,15 @@ data class GamePlayer(
         val selfJerseyIsNumber = jerseyNumber.toIntOrNull() != null
         val otherJerseyIsNumber = other.jerseyNumber.toIntOrNull() != null
 
-        return if (selfJerseyIsNumber != otherJerseyIsNumber)
-            if (selfJerseyIsNumber) -1 else 1
-        else if (selfJerseyIsNumber)
-            jerseyNumber.toInt() - other.jerseyNumber.toInt()
-        else
-            jerseyNumber.compareTo(other.jerseyNumber)
+        return when {
+            isAbsent != other.isSelected -> {
+                if (isAbsent) 1 else -1
+            }
+            selfJerseyIsNumber != otherJerseyIsNumber -> {
+                if (selfJerseyIsNumber) -1 else 1
+            }
+            selfJerseyIsNumber -> jerseyNumber.toInt() - other.jerseyNumber.toInt()
+            else -> jerseyNumber.compareTo(other.jerseyNumber)
+        }
     }
 }

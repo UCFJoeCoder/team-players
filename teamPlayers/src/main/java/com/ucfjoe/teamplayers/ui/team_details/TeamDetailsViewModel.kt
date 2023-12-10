@@ -6,8 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ucfjoe.teamplayers.Screen
-import com.ucfjoe.teamplayers.domain.repository.GameRepository
-import com.ucfjoe.teamplayers.domain.repository.TeamRepository
+import com.ucfjoe.teamplayers.domain.use_case.TeamDetailsUseCases
 import com.ucfjoe.teamplayers.ui.NavEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -19,8 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TeamDetailsViewModel @Inject constructor(
-    private val teamRepository: TeamRepository,
-    private val gameRepository: GameRepository,
+    private val teamDetailsUseCases: TeamDetailsUseCases,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -34,7 +32,7 @@ class TeamDetailsViewModel @Inject constructor(
         val paramTeamId: String? = savedStateHandle["team_id"]
         paramTeamId?.toLong()?.let { teamId ->
             viewModelScope.launch {
-                teamRepository.getTeamWithGames(teamId).onEach {
+                teamDetailsUseCases.getTeamWithGamesUseCase(teamId).onEach {
                     _state.value = state.value.copy(team = it.team, games = it.games.sorted())
                 }.launchIn(viewModelScope)
             }
@@ -59,7 +57,7 @@ class TeamDetailsViewModel @Inject constructor(
 
             is TeamDetailsEvent.OnDeleteGameClick -> {
                 viewModelScope.launch {
-                    gameRepository.deleteGame(event.game)
+                    teamDetailsUseCases.deleteGameUseCase(event.game)
                 }
             }
 

@@ -1,4 +1,4 @@
-package com.ucfjoe.teamplayers.ui.game_details
+package com.ucfjoe.teamplayers.ui.game_details.dialogs
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

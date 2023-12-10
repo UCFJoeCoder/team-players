@@ -58,7 +58,7 @@ fun AddEditTeamDialog(
                     placeholder = {
                         Text(text = "Team Name")
                     },
-                    isError = errorMessage.isNullOrBlank().not(),
+                    isError = !errorMessage.isNullOrBlank(),
                     supportingText = { errorMessage?.let { Text(text = it) } }
                 )
                 Row(

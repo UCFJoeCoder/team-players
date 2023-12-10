@@ -1,15 +1,13 @@
 package com.ucfjoe.teamplayers.ui.game_details
 
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ucfjoe.teamplayers.common.Resource
 import com.ucfjoe.teamplayers.domain.model.GamePlayer
-import com.ucfjoe.teamplayers.domain.repository.GamePlayerRepository
-import com.ucfjoe.teamplayers.domain.repository.GameRepository
-import com.ucfjoe.teamplayers.domain.repository.TeamRepository
+import com.ucfjoe.teamplayers.domain.use_case.GameDetailsUseCases
 import com.ucfjoe.teamplayers.ui.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -21,9 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GameDetailsViewModel @Inject constructor(
-    private val teamRepository: TeamRepository,
-    private val gameRepository: GameRepository,
-    private val gamePlayerRepository: GamePlayerRepository,
+    private val gameDetailsUseCases: GameDetailsUseCases,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -39,7 +35,7 @@ class GameDetailsViewModel @Inject constructor(
         val paramTeamId: String? = savedStateHandle["team_id"]
         paramTeamId?.toLong()?.let { teamId ->
             viewModelScope.launch {
-                teamRepository.getTeamWithGames(teamId).onEach {
+                gameDetailsUseCases.getTeamWithGamesUseCase(teamId).onEach {
                     _state.value = state.value.copy(team = it.team)
                 }.launchIn(viewModelScope)
             }
@@ -48,7 +44,7 @@ class GameDetailsViewModel @Inject constructor(
         val paramGameId: String? = savedStateHandle["game_id"]
         paramGameId?.toLong()?.let { gameId ->
             viewModelScope.launch {
-                gameRepository.getGameWithGamePlayers(gameId).onEach {
+                gameDetailsUseCases.getGameWithGamePlayersUseCase(gameId).onEach {
                     _state.value = state.value.copy(
                         game = it.game,
                         players = it.gamePlayers.sorted(),
@@ -69,7 +65,7 @@ class GameDetailsViewModel @Inject constructor(
         when (event) {
             GameDetailsEvent.OnImportPlayers -> {
                 viewModelScope.launch {
-                    gamePlayerRepository.insertGamePlayersFromTeamPlayers(
+                    gameDetailsUseCases.importPlayersIntoGamePlayersUseCase(
                         state.value.game!!.id,
                         state.value.game!!.teamId
                     )
@@ -85,12 +81,8 @@ class GameDetailsViewModel @Inject constructor(
             }
 
             GameDetailsEvent.OnResetCountsToZero -> {
-                _state.value = state.value.copy(
-                    players = state.value.players.map { it.copy(count = 0) }
-                )
-                // Store the changes that were just made locally to the database
                 viewModelScope.launch {
-                    gamePlayerRepository.upsertGamePlayer(state.value.players)
+                    gameDetailsUseCases.resetCountsToZeroUseCase(state.value.players)
                 }
             }
 
@@ -103,42 +95,32 @@ class GameDetailsViewModel @Inject constructor(
             GameDetailsEvent.OnRepeatSelectionClick -> {
                 _state.value = state.value.copy(
                     players = state.value.players.map {
-                        it.copy(isSelected = lastPlayersSelected.contains(it.id))
+                        it.copy(isSelected = !it.isAbsent && lastPlayersSelected.contains(it.id))
                     }
                 )
             }
 
             GameDetailsEvent.OnIncrementSelectionClick -> {
-                if (state.value.players.count { it.isSelected } == 0) {
-                    sendUiEvent(UiEvent.ShowToast("No players are selected!"))
-                    return
-                }
+                val selectedIds = state.value.players.filter { it.isSelected }.map { it.id }
 
-                lastPlayersSelected.clear()
-
-                // Save a list of the currently selected players. This is used by the OnRepeatSelection
-                state.value.players.filter { it.isSelected }.map { it.id }
-                    .toCollection(lastPlayersSelected)
-
-                // Update the Count and isSelected state
-                _state.value = state.value.copy(
-                    players = state.value.players.map { gamePlayer ->
-                        if (gamePlayer.isSelected)
-                            gamePlayer.copy(count = gamePlayer.count + 1, isSelected = false)
-                        else
-                            gamePlayer
-                    }
-                )
-
-                // Store the changes that were just made locally to the database
                 viewModelScope.launch {
-                    gamePlayerRepository.upsertGamePlayer(state.value.players)
+                    when (val result = gameDetailsUseCases.incrementSelectedGamePlayersUseCase(state.value.players)){
+                        is Resource.Success -> {
+                            lastPlayersSelected.clear()
+                            lastPlayersSelected.addAll(selectedIds)
+                            _state.value = state.value.copy(players = result.data!!)
+                        }
+                        is Resource.Error -> {
+                            sendUiEvent(UiEvent.ShowToast(message = result.message!!))
+                        }
+                    }
                 }
             }
 
             is GameDetailsEvent.OnSelectPlayerClick -> {
+                if (event.player.isAbsent) return
                 _state.value = state.value.copy(
-                    players = state.value.players.map { if (it == event.player) it.copy(isSelected = it.isSelected.not()) else it }
+                    players = state.value.players.map { if (it == event.player) it.copy(isSelected = !it.isSelected) else it }
                 )
             }
 
@@ -155,7 +137,7 @@ class GameDetailsViewModel @Inject constructor(
             }
 
             is GameDetailsEvent.OnProcessEditPlayerRequest -> {
-                processSaveEditPlayer(event.player)
+                processSaveEditPlayer(event.editPlayer)
             }
 
             GameDetailsEvent.OnShowPopupMenu -> {
@@ -192,38 +174,24 @@ class GameDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun processSaveEditPlayer(player: GamePlayer) {
-        if (player.jerseyNumber.isBlank()) {
-            _state.value = state.value.copy(editErrorMessage = "Jersey Number must be provided")
-            return
-        }
-        if (player.jerseyNumber.length > 2) {
-            _state.value =
-                state.value.copy(editErrorMessage = "Jersey Number must be at most 2 characters")
-            return
-        }
-        if (player.jerseyNumber.matches("^[a-zA-Z0-9]*$".toRegex()).not()) {
-            _state.value =
-                state.value.copy(editErrorMessage = "Jersey Number can only contain numbers and letters")
-            return
-        }
-        if (player.count < 0 || player.count > 100) {
-            _state.value =
-                state.value.copy(editErrorMessage = "Number of Plays must be between 0 and 100")
-            return
-        }
-        if (state.value.players.count {
-                it.id != player.id &&
-                        it.jerseyNumber.equals(player.jerseyNumber, true)
-            } > 0
-        ) {
-            _state.value = state.value.copy(editErrorMessage = "Duplicate jersey number")
-            return
-        } else {
-            viewModelScope.launch {
-                gamePlayerRepository.upsertGamePlayer(player)
+    private fun processSaveEditPlayer(editPlayer: GamePlayer) {
+        viewModelScope.launch {
+            when (val result =
+                gameDetailsUseCases.editGamePlayerUseCase(
+                    editPlayer.id,
+                    editPlayer.gameId,
+                    editPlayer.jerseyNumber,
+                    editPlayer.count,
+                    editPlayer.isAbsent
+                )) {
+                is Resource.Success -> {
+                    _state.value = state.value.copy(showEditPlayerDialog = false)
+                }
+
+                is Resource.Error -> {
+                    _state.value = state.value.copy(editErrorMessage = result.message)
+                }
             }
-            _state.value = state.value.copy(showEditPlayerDialog = false)
         }
     }
 }

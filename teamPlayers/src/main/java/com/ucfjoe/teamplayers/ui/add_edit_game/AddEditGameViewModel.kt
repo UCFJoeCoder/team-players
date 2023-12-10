@@ -5,11 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ucfjoe.teamplayers.domain.model.Game
-import com.ucfjoe.teamplayers.domain.repository.GameRepository
-import com.ucfjoe.teamplayers.domain.repository.TeamRepository
+import com.ucfjoe.teamplayers.domain.use_case.AddEditGameUseCases
 import com.ucfjoe.teamplayers.ui.NavEvent
-import com.ucfjoe.teamplayers.ui.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -19,8 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddEditGameViewModel @Inject constructor(
-    private val gameRepository: GameRepository,
-    private val teamRepository: TeamRepository,
+    private val addEditGameUseCases: AddEditGameUseCases,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -34,7 +30,7 @@ class AddEditGameViewModel @Inject constructor(
         val paramTeamId: String? = savedStateHandle["team_id"]
         paramTeamId?.toLong()?.let { teamId ->
             viewModelScope.launch {
-                teamRepository.getTeam(teamId)?.let { team ->
+                addEditGameUseCases.getTeamByIdUseCase(teamId)?.let { team ->
                     _state.value = state.value.copy(teamId = teamId, team = team)
                 }
             }
@@ -43,7 +39,7 @@ class AddEditGameViewModel @Inject constructor(
         val paramGameId: String? = savedStateHandle["game_id"]
         paramGameId?.toLong()?.let { gameId ->
             viewModelScope.launch {
-                gameRepository.getGame(gameId)?.let { game ->
+                addEditGameUseCases.getGameByIdUseCase(gameId)?.let { game ->
                     _state.value = state.value.copy(game = game)
                 }
             }
@@ -85,14 +81,11 @@ class AddEditGameViewModel @Inject constructor(
     private fun processSaveGameClick() {
         viewModelScope.launch {
 
-            val game = Game(
-                id = state.value.game?.id ?: 0,
-                teamId = state.value.teamId,
-                gameDateTime = LocalDateTime.of(state.value.date, state.value.time)
-            )
+            val newDateTime = LocalDateTime.of(state.value.date, state.value.time)
+            addEditGameUseCases.upsertGameUseCase(newDateTime, state.value.teamId, state.value.game)
 
-            gameRepository.upsertGame(game)
-
+            // The above call only return Success.
+            // There is no need to capture the results and verify
             sendNavEvent(NavEvent.PopBackStack)
         }
     }

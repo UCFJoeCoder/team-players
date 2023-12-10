@@ -37,8 +37,8 @@ class TeamRepositoryImpl @Inject constructor(
         return teamDao.getTeamsWithName(name)
     }
 
-    override suspend fun getTeamsWithNameCaseSensitive(name: String): Int {
-        return teamDao.getTeamsWithNameCaseSensitive(name)
+    override suspend fun getTeamsWithNameWithoutId(name: String, id: Long): Int {
+      return teamDao.getTeamsWithNameWithoutId(name, id)
     }
 
     override fun getTeamWithGames(teamId: Long): Flow<TeamWithGames> {
