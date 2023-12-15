@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit
 
 @Preview
 @Composable
-fun DatePickerDialog(){
+fun DatePickerDialog() {
     DatePickerDialog(
         {},
         {},
@@ -42,7 +42,7 @@ fun DatePickerDialog(
     initialDate: LocalDate? = null
 ) {
     val date = (initialDate ?: LocalDate.now())
-    val dateMillis = TimeUnit.DAYS.toMillis(date.toEpochDay()) //* 24 * 60 * 60 * 1000
+    val dateMillis = TimeUnit.DAYS.toMillis(date.toEpochDay())
 
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = dateMillis,
@@ -55,8 +55,7 @@ fun DatePickerDialog(
 
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
-            modifier = Modifier
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp)
         ) {
             Column(
@@ -64,13 +63,17 @@ fun DatePickerDialog(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                DatePicker(state = datePickerState, title = {
-                    Text(
-                        modifier = Modifier.padding(16.dp),
-                        text = "Game Date",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                })
+                DatePicker(
+                    state = datePickerState, title = {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            text = "Game Date",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End

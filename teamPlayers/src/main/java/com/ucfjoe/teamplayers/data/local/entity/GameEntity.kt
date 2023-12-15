@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.ucfjoe.teamplayers.domain.model.Game
 import java.time.LocalDateTime
 
 @Entity(
@@ -29,3 +30,21 @@ data class GameEntity(
     @ColumnInfo(name = "id")
     val id: Long = 0
 )
+
+fun GameEntity.toGame(): Game {
+    return Game(
+        id = this.id,
+        teamId = this.teamId,
+        gameDateTime = this.dateTime,
+        isCompleted = this.isCompleted
+    )
+}
+
+fun Game.toGameEntity(): GameEntity {
+    return GameEntity(
+        id = this.id,
+        teamId = this.teamId,
+        dateTime = this.gameDateTime,
+        isCompleted = this.isCompleted
+    )
+}

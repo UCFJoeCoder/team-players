@@ -1,8 +1,8 @@
 package com.ucfjoe.teamplayers.data.repository
 
 import com.ucfjoe.teamplayers.data.local.dao.GameDao
-import com.ucfjoe.teamplayers.data.local.toGame
-import com.ucfjoe.teamplayers.data.local.toGameEntity
+import com.ucfjoe.teamplayers.data.local.entity.toGame
+import com.ucfjoe.teamplayers.data.local.entity.toGameEntity
 import com.ucfjoe.teamplayers.data.local.toGameWithGamePlayers
 import com.ucfjoe.teamplayers.domain.model.Game
 import com.ucfjoe.teamplayers.domain.model.GameWithGamePlayers

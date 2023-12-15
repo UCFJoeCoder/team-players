@@ -1,8 +1,8 @@
 package com.ucfjoe.teamplayers.data.repository
 
 import com.ucfjoe.teamplayers.data.local.dao.PlayerDao
-import com.ucfjoe.teamplayers.data.local.toPlayer
-import com.ucfjoe.teamplayers.data.local.toPlayerEntity
+import com.ucfjoe.teamplayers.data.local.entity.toPlayer
+import com.ucfjoe.teamplayers.data.local.entity.toPlayerEntity
 import com.ucfjoe.teamplayers.domain.model.Player
 import com.ucfjoe.teamplayers.domain.repository.PlayerRepository
 import kotlinx.coroutines.flow.Flow

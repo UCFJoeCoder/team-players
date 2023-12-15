@@ -17,6 +17,11 @@ interface GamePlayerRepository {
 
     suspend fun insertGamePlayersFromTeamPlayers(gameId: Long, teamId: Long)
 
+    suspend fun getDifferencesBetweenPlayersAndGamePlayers(
+        gameId: Long,
+        teamId: Long
+    ): List<String>
+
     suspend fun getNumberOfPlayersWithJerseyNumber(
         playerId: Long,
         gameId: Long,

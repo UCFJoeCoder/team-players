@@ -5,7 +5,6 @@ import com.ucfjoe.teamplayers.domain.model.Team
 import java.time.LocalDate
 import java.time.LocalTime
 
-
 data class AddEditGameState(
     val teamId: Long = 0,
     val team: Team? = null,

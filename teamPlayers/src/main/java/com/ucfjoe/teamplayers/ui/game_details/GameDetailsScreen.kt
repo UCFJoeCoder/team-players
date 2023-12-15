@@ -92,7 +92,7 @@ fun GameDetailsScreen(
     if (gameDetailsState.showImportCurrentPlayerDialog) {
         ConfirmDialog(
             dialogTitle = "Import Players",
-            dialogText = getRequestImportPlayersMessage(gameDetailsState.players.isEmpty()),
+            dialogText = getRequestImportPlayersMessage(),
             onConfirmRequest = {
                 onEvent(GameDetailsEvent.OnDismissImportDialog)
                 onEvent(GameDetailsEvent.OnImportPlayers)
@@ -110,8 +110,8 @@ fun GameDetailsScreen(
     }
     if (gameDetailsState.showRequestClearCountDialog) {
         ConfirmDialog(
-            dialogTitle = "Reset Counts to Zero",
-            dialogText = "Press Confirm to reset all the number of plays to zero.",
+            dialogTitle = "Set Plays to Zero",
+            dialogText = "Press Confirm to set all the number of plays to zero.",
             onConfirmRequest = {
                 onEvent(GameDetailsEvent.OnHideResetCountDialog)
                 onEvent(GameDetailsEvent.OnResetCountsToZero)
@@ -237,11 +237,13 @@ fun GameDetailsScreen(
     }
 }
 
-fun getRequestImportPlayersMessage(isListEmpty: Boolean): String {
-    return if (isListEmpty)
-        "This game does not have any players.\n\nWould you like to import the current players from the team?"
-    else
-        "If you proceed, all current players will be removed from this game.\n\nAll the current players on the team will be imported."
+//fun getRequestImportPlayersMessage(playersHaveChanged: Boolean): String {
+fun getRequestImportPlayersMessage(): String {
+    return "A change in players was detected. Would you like to import the Team players to this game?\n\n" +
+            "If you proceed, all current players will be removed from this game.\n\n" +
+            "All the current players of the team will be imported."
+//    else
+//        "If you proceed, all current players will be removed from this game.\n\nAll the current players of the team will be imported."
 }
 
 @Preview(showBackground = true)

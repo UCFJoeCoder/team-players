@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.ucfjoe.teamplayers.domain.model.Player
 
 @Entity(
     tableName = "players", foreignKeys = [ForeignKey(
@@ -24,3 +25,19 @@ data class PlayerEntity(
     @ColumnInfo(name = "id", index = true)
     val id: Long = 0
 )
+
+fun PlayerEntity.toPlayer(): Player {
+    return Player(
+        id = this.id,
+        teamId = this.teamId,
+        jerseyNumber = this.jerseyNumber
+    )
+}
+
+fun Player.toPlayerEntity(): PlayerEntity {
+    return PlayerEntity(
+        id = this.id,
+        teamId = this.teamId,
+        jerseyNumber = this.jerseyNumber
+    )
+}

@@ -30,6 +30,7 @@ class GameDetailsViewModel @Inject constructor(
     val state: State<GameDetailsState> = _state
 
     private val lastPlayersSelected = mutableListOf<Long>()
+    private val hasRunOnce = mutableStateOf(false)
 
     init {
         val paramTeamId: String? = savedStateHandle["team_id"]
@@ -48,9 +49,40 @@ class GameDetailsViewModel @Inject constructor(
                     _state.value = state.value.copy(
                         game = it.game,
                         players = it.gamePlayers.sorted(),
-                        showImportCurrentPlayerDialog = it.gamePlayers.isEmpty()
                     )
+                    if (!hasRunOnce.value) {
+                        initialPlayersCheck()
+                    }
                 }.launchIn(viewModelScope)
+            }
+        }
+    }
+
+    private fun initialPlayersCheck() {
+        hasRunOnce.value = true
+        if (state.value.players.isEmpty()) {
+            // Auto import players from Team if the gamesPlayers list is empty
+            processImportPlayers()
+        } else {
+            checkForPlayerChanges()
+        }
+    }
+
+    private fun checkForPlayerChanges() {
+        viewModelScope.launch {
+            if (state.value.team == null) {
+                return@launch
+            }
+
+            val differences = gameDetailsUseCases.getDifferencesBetweenPlayersAndGamePlayers(
+                state.value.game!!.id,
+                state.value.team!!.id
+            )
+            if (differences.isNotEmpty()) {
+                _state.value = state.value.copy(
+                    //changePlayersDetected = true,
+                    showImportCurrentPlayerDialog = true
+                )
             }
         }
     }
@@ -61,20 +93,27 @@ class GameDetailsViewModel @Inject constructor(
         }
     }
 
+    private fun processImportPlayers() {
+        viewModelScope.launch {
+            gameDetailsUseCases.importPlayersIntoGamePlayersUseCase(
+                state.value.game!!.id,
+                state.value.game!!.teamId
+            )
+        }
+    }
+
     fun onEvent(event: GameDetailsEvent) {
         when (event) {
             GameDetailsEvent.OnImportPlayers -> {
-                viewModelScope.launch {
-                    gameDetailsUseCases.importPlayersIntoGamePlayersUseCase(
-                        state.value.game!!.id,
-                        state.value.game!!.teamId
-                    )
-                }
+                processImportPlayers()
             }
 
-            GameDetailsEvent.OnRequestImportPlayers -> {
-                _state.value = state.value.copy(showImportCurrentPlayerDialog = true)
-            }
+//            GameDetailsEvent.OnRequestImportPlayers -> {
+//                _state.value = state.value.copy(
+//                    changePlayersDetected = false,
+//                    showImportCurrentPlayerDialog = true
+//                )
+//            }
 
             GameDetailsEvent.OnDismissImportDialog -> {
                 _state.value = state.value.copy(showImportCurrentPlayerDialog = false)
@@ -104,12 +143,14 @@ class GameDetailsViewModel @Inject constructor(
                 val selectedIds = state.value.players.filter { it.isSelected }.map { it.id }
 
                 viewModelScope.launch {
-                    when (val result = gameDetailsUseCases.incrementSelectedGamePlayersUseCase(state.value.players)){
+                    when (val result =
+                        gameDetailsUseCases.incrementSelectedGamePlayersUseCase(state.value.players)) {
                         is Resource.Success -> {
                             lastPlayersSelected.clear()
                             lastPlayersSelected.addAll(selectedIds)
                             _state.value = state.value.copy(players = result.data!!)
                         }
+
                         is Resource.Error -> {
                             sendUiEvent(UiEvent.ShowToast(message = result.message!!))
                         }

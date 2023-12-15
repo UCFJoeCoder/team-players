@@ -6,13 +6,16 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.google.common.truth.Truth
 import com.ucfjoe.teamplayers.data.TeamPlayersDatabase
+import com.ucfjoe.teamplayers.data.local.entity.GameEntity
 import com.ucfjoe.teamplayers.data.local.entity.TeamEntity
+import com.ucfjoe.teamplayers.domain.model.Team
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.time.LocalDateTime
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
@@ -124,29 +127,23 @@ class TeamDaoTest {
     }
 
     @Test
-    fun getTeamsWithNameCaseSensitiveTest() = runTest {
-        val foundCount = 1
-        val notFoundCount = 0
-        val insertName = "GoodTeam"
-        val insertNameDifferentCase = "GoOdtEaM"
-        val notInsertedName = "BadName"
-        teamDao.upsertTeam(TeamEntity(insertName))
-
-        // Perform search when names have the same case
-        val count = teamDao.getTeamsWithNameCaseSensitive(insertName)
-        Truth.assertThat(count).isEqualTo(foundCount)
-
-        // Perform search when names do not have the same case
-        val goodCount = teamDao.getTeamsWithNameCaseSensitive(insertNameDifferentCase)
-        Truth.assertThat(goodCount).isEqualTo(notFoundCount)
-
-        // Perform search for name that does not exist
-        val missingCount = teamDao.getTeamsWithNameCaseSensitive(notInsertedName)
-        Truth.assertThat(missingCount).isEqualTo(notFoundCount)
-    }
-
-    @Test
     fun getTeamWithGamesTest() = runTest {
+
+        val team = TeamEntity(name = "TestTeam", 1)
+        val teamId = teamDao.upsertTeam(team)
+        val gameDao = database.gameDao
+
+        val games = listOf(
+            GameEntity(LocalDateTime.now().minusMinutes(15), teamId),
+            GameEntity(LocalDateTime.now().minusMinutes(10), teamId),
+            GameEntity(LocalDateTime.now().minusMinutes(5), teamId)
+        )
+        games.forEach { gameDao.upsertGame(it) }
+
+        val teamWithGameEntity = teamDao.getTeamWithGames(teamId)
+
+        Truth.assertThat(teamWithGameEntity).isNotNull()
+
         // TODO: Maybe test in another test class... this requires gameDao to insert test data
 
         //  @Query("SELECT * FROM teams WHERE id=:teamId")

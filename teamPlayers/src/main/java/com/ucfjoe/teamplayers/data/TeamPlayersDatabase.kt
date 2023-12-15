@@ -23,28 +23,8 @@ import com.ucfjoe.teamplayers.data.local.entity.TeamEntity
 )
 @TypeConverters(Converters::class)
 abstract class TeamPlayersDatabase : RoomDatabase() {
-
     abstract val gameDao: GameDao
     abstract val teamDao: TeamDao
     abstract val playerDao: PlayerDao
     abstract val gamePlayerDao: GamePlayerDao
-
-//    companion object {
-//        @Volatile
-//        private var INSTANCE: TeamPlayersDatabase? = null
-//
-//        fun getInstance(context: Context): TeamPlayersDatabase {
-//            synchronized(this) {
-//                return INSTANCE ?: synchronized(this) {
-//                    Room.databaseBuilder(
-//                        context.applicationContext,
-//                        TeamPlayersDatabase::class.java,
-//                        "team_player_db"
-//                    ).build().also {
-//                        INSTANCE = it
-//                    }
-//                }
-//            }
-//        }
-//    }
 }

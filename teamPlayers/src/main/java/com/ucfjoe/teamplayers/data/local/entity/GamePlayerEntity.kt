@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.ucfjoe.teamplayers.domain.model.GamePlayer
 
 @Entity(
     tableName = "game_players",
@@ -31,3 +32,23 @@ data class GamePlayerEntity(
     @ColumnInfo(name = "id")
     val id: Long = 0
 )
+
+fun GamePlayerEntity.toGamePlayer(): GamePlayer {
+    return GamePlayer(
+        id = this.id,
+        gameId = this.gameId,
+        jerseyNumber = this.jerseyNumber,
+        count = this.count,
+        isAbsent = this.isAbsent
+    )
+}
+
+fun GamePlayer.toGamePlayerEntity(): GamePlayerEntity {
+    return GamePlayerEntity(
+        id = this.id,
+        gameId = this.gameId,
+        jerseyNumber = this.jerseyNumber,
+        count = this.count,
+        isAbsent = this.isAbsent
+    )
+}

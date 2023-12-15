@@ -27,26 +27,7 @@ fun GameDetailsDropDownMenu(
         DropdownMenuItem(
             text = {
                 Text(
-                    text = "Import Players from Team",
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-            },
-            onClick = {
-                onEvent(GameDetailsEvent.OnHidePopupMenu)
-                onEvent(GameDetailsEvent.OnRequestImportPlayers)
-            },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(R.drawable.system_update_alt_fill_24),
-                    contentDescription = "Import players from team"
-                )
-            }
-        )
-        Divider()
-        DropdownMenuItem(
-            text = {
-                Text(
-                    text = "Reset Counts to Zero",
+                    text = "Reset Plays to Zero",
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             },

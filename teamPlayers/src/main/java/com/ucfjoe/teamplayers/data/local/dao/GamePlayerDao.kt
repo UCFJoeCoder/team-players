@@ -33,6 +33,18 @@ interface GamePlayerDao {
     suspend fun insertGamePlayersFromTeamPlayers(gameId: Long, teamId: Long)
 
     @Query(
+        "SELECT jersey_number FROM players WHERE team_id=:teamId AND jersey_number NOT IN (" +
+                "SELECT jersey_number FROM game_players WHERE game_id=:gameId)" +
+                " UNION " +
+                "SELECT jersey_number FROM game_players WHERE game_id=:gameId AND jersey_number NOT IN (" +
+                "SELECT jersey_number FROM players WHERE team_id=:teamId)"
+    )
+    suspend fun getDifferencesBetweenPlayersAndGamePlayers(
+        gameId: Long,
+        teamId: Long
+    ): List<String>
+
+    @Query(
         "SELECT COUNT(*) FROM game_players " +
                 "WHERE game_id = :gameId AND id != :playerId AND UPPER(jersey_number) = UPPER(:jerseyNumber)"
     )

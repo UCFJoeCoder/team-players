@@ -1,8 +1,8 @@
 package com.ucfjoe.teamplayers.data.repository
 
 import com.ucfjoe.teamplayers.data.local.dao.GamePlayerDao
-import com.ucfjoe.teamplayers.data.local.toGamePlayer
-import com.ucfjoe.teamplayers.data.local.toGamePlayerEntity
+import com.ucfjoe.teamplayers.data.local.entity.toGamePlayer
+import com.ucfjoe.teamplayers.data.local.entity.toGamePlayerEntity
 import com.ucfjoe.teamplayers.domain.model.GamePlayer
 import com.ucfjoe.teamplayers.domain.repository.GamePlayerRepository
 import kotlinx.coroutines.flow.Flow
@@ -35,6 +35,13 @@ class GamePlayerRepositoryImpl @Inject constructor(
     override suspend fun insertGamePlayersFromTeamPlayers(gameId: Long, teamId: Long) {
         deleteGamePlayers(gameId)
         gamePlayerDao.insertGamePlayersFromTeamPlayers(gameId, teamId)
+    }
+
+    override suspend fun getDifferencesBetweenPlayersAndGamePlayers(
+        gameId: Long,
+        teamId: Long
+    ): List<String> {
+        return gamePlayerDao.getDifferencesBetweenPlayersAndGamePlayers(gameId, teamId)
     }
 
     override suspend fun getNumberOfPlayersWithJerseyNumber(

@@ -40,7 +40,11 @@ class AddEditGameViewModel @Inject constructor(
         paramGameId?.toLong()?.let { gameId ->
             viewModelScope.launch {
                 addEditGameUseCases.getGameByIdUseCase(gameId)?.let { game ->
-                    _state.value = state.value.copy(game = game)
+                    _state.value = state.value.copy(
+                        game = game,
+                        date = game.gameDateTime.toLocalDate(),
+                        time = game.gameDateTime.toLocalTime()
+                    )
                 }
             }
         }
