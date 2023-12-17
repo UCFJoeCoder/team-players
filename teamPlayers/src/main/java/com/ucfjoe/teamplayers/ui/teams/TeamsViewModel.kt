@@ -53,7 +53,7 @@ class TeamsViewModel @Inject constructor(
 
             is TeamsEvent.OnTeamClick -> {
                 val screen =
-                    if (state.value.isEditMode) Screen.AddEditTeamScreen else Screen.TeamDetailsScreen
+                    if (state.value.isEditMode) Screen.EditTeamScreen else Screen.TeamDetailsScreen
                 sendNavEvent(NavEvent.Navigate(screen.route + "?team_id=${event.team.id}"))
             }
 
@@ -74,7 +74,7 @@ class TeamsViewModel @Inject constructor(
             when (val result = teamsUseCases.addTeamUseCase(name)) {
                 is Resource.Success -> {
                     _state.value = state.value.copy(showAddTeamDialog = false)
-                    sendNavEvent(NavEvent.Navigate(route = Screen.AddEditTeamScreen.route + "?team_id=${result.data!!.id}"))
+                    sendNavEvent(NavEvent.Navigate(route = Screen.EditTeamScreen.route + "?team_id=${result.data.id}"))
                 }
 
                 is Resource.Error -> {
@@ -86,7 +86,6 @@ class TeamsViewModel @Inject constructor(
 
     private fun sendNavEvent(event: NavEvent) {
         viewModelScope.launch {
-            Log.e("sending", "sendNaveEvent")
             _navEvent.send(event)
         }
     }

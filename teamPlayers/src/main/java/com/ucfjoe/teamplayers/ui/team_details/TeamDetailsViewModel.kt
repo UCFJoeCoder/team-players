@@ -62,7 +62,7 @@ class TeamDetailsViewModel @Inject constructor(
             }
 
             is TeamDetailsEvent.OnEditTeamClick -> {
-                sendNavEvent(NavEvent.Navigate(Screen.AddEditTeamScreen.route + "?team_id=${state.value.team.id}"))
+                sendNavEvent(NavEvent.Navigate(Screen.EditTeamScreen.route + "?team_id=${state.value.team.id}"))
             }
         }
     }

@@ -52,20 +52,24 @@ class GameDetailsViewModel @Inject constructor(
                         players = it.gamePlayers.sorted(),
                     )
                     if (!hasRunOnce.value) {
-                        initialPlayersCheck()
+                        checkForChangesInTeamPlayers()
                     }
                 }.launchIn(viewModelScope)
             }
         }
     }
 
-    private fun initialPlayersCheck() {
+    private fun checkForChangesInTeamPlayers() {
         hasRunOnce.value = true
-        if (state.value.players.isEmpty()) {
-            // Auto import players from Team if the gamesPlayers list is empty
-            processImportPlayers()
-        } else {
-            checkForPlayerChanges()
+        // If a game has been completed then do not check if there have been any changes to the
+        // players on the team
+        if (state.value.game?.isCompleted?.not() == true) {
+            if (state.value.players.isEmpty()) {
+                // Auto import players from Team if the gamesPlayers list is empty
+                processImportPlayers()
+            } else {
+                checkForPlayerChanges()
+            }
         }
     }
 
@@ -108,13 +112,6 @@ class GameDetailsViewModel @Inject constructor(
             GameDetailsEvent.OnImportPlayers -> {
                 processImportPlayers()
             }
-
-//            GameDetailsEvent.OnRequestImportPlayers -> {
-//                _state.value = state.value.copy(
-//                    changePlayersDetected = false,
-//                    showImportCurrentPlayerDialog = true
-//                )
-//            }
 
             GameDetailsEvent.OnDismissImportDialog -> {
                 _state.value = state.value.copy(showImportCurrentPlayerDialog = false)
@@ -190,16 +187,25 @@ class GameDetailsViewModel @Inject constructor(
                 _state.value = state.value.copy(showPopupMenu = false)
             }
 
-            GameDetailsEvent.OnShowShareGameResultsDialog -> {
-                _state.value = state.value.copy(showShareGameDetailsDialog = true)
+            GameDetailsEvent.OnConfirmShareGameResults -> {
+                // Hide the share game dialog
+                _state.value = state.value.copy(showShareGameDetailsDialog = false)
+                // Mark the game as completed
+                processSetGameCompletedState(isCompleted = true)
+                // Share the game data
+                shareGameData()
+            }
+
+            GameDetailsEvent.OnShareGameDataRequest -> {
+                if (state.value.game!!.isCompleted) {
+                    shareGameData()
+                } else {
+                    _state.value = state.value.copy(showShareGameDetailsDialog = true)
+                }
             }
 
             GameDetailsEvent.OnDismissShareGameResultsDialog -> {
                 _state.value = state.value.copy(showShareGameDetailsDialog = false)
-            }
-
-            GameDetailsEvent.OnShareGameData -> {
-                shareGameData()
             }
 
             GameDetailsEvent.OnShowHelpDialog -> {
@@ -229,23 +235,10 @@ class GameDetailsViewModel @Inject constructor(
             is GameDetailsEvent.OnChangeGameCompletedState -> {
                 processSetGameCompletedState(event.isCompleted)
             }
-
-            GameDetailsEvent.OnStartActivityError -> {
-                _state.value =
-                    state.value.copy(
-                        emailErrorMessage = "Failed to send email. Either there is " +
-                                "no Email App on this device or another error occurred."
-                    )
-            }
         }
     }
 
     private fun shareGameData() {
-        // TODO Determine if the game needs to be in a completed state or should be switched to a completed state with this action
-        // Should this only be allowed when the game is completed?
-        // Should this auto set the game as completed?
-        // Should this tell the user, in a dialog, that by continuing this action will mark the game as completed?
-
         val team = state.value.team
         val game = state.value.game
         val players = state.value.players

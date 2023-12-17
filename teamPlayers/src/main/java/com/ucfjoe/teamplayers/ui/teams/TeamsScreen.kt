@@ -123,10 +123,9 @@ fun TeamsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(modifier = Modifier.fillMaxWidth(.5f)) {
+                    Column(modifier = Modifier.fillMaxWidth(.7f)) {
                         Text(
                             text = "Teams",
-                            modifier = Modifier,
                             style = MaterialTheme.typography.titleLarge
                                 .copy(color = Color.White)
                         )
@@ -185,10 +184,12 @@ fun GetEditActionIcon(isEditMode: Boolean) {
 fun TeamScreenPreview() {
     TeamsScreen(
         teamsState = TeamsState(
-            listOf(
+            teams = listOf(
                 Team(1, "Knights"),
-                Team(2, "Seminoles")
-            )
+                Team(2, "Seminoles"),
+                Team(3, "Spartans" )
+            ),
+            isEditMode = false
         ),
         onEvent = {})
 }

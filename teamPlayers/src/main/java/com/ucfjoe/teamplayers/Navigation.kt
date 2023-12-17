@@ -23,7 +23,7 @@ fun Navigation() {
             TeamsScreen(onNavigate = { navController.navigate(it.route) })
         }
         composable(
-            route = Screen.AddEditTeamScreen.route + "?team_id={team_id}",
+            route = Screen.EditTeamScreen.route + "?team_id={team_id}",
             arguments = listOf(
                 navArgument("team_id") {
                     type = NavType.StringType

@@ -24,11 +24,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ucfjoe.teamplayers.domain.model.Game
 import com.ucfjoe.teamplayers.ui.core.ConfirmDialog
 import com.ucfjoe.teamplayers.ui.formatLocalizedDateTime
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -92,4 +94,19 @@ fun GameItem(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun PreviewGameItem() {
+    GameItem(
+        game = Game(
+            id = 1,
+            teamId = 1,
+            gameDateTime = LocalDateTime.now(),
+            isCompleted = false
+        ),
+        onEvent = {},
+        isEditMode = true
+    )
 }

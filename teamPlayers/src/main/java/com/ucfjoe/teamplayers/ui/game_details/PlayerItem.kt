@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ucfjoe.teamplayers.domain.model.GamePlayer
 import com.ucfjoe.teamplayers.domain.model.PlayerStatus
@@ -34,8 +35,12 @@ fun PlayerItem(
                 enabled = enabled
             ),
         colors = CardDefaults.cardColors(
-            containerColor = getContainerColor(player.getStatus()).conditional(!enabled, { this.copy(alpha = .38f) }),
-            contentColor = getContentColor(player.getStatus()).conditional(!enabled, { this.copy(alpha = .38f) })
+            containerColor = getContainerColor(player.getStatus()).conditional(
+                !enabled,
+                { this.copy(alpha = .38f) }),
+            contentColor = getContentColor(player.getStatus()).conditional(
+                !enabled,
+                { this.copy(alpha = .38f) })
         )
     ) {
         Column(
@@ -79,5 +84,15 @@ private fun getContentColor(playerStatus: PlayerStatus): Color {
         PlayerStatus.NORMAL -> MaterialTheme.colorScheme.onSecondaryContainer
         PlayerStatus.SELECTED -> MaterialTheme.colorScheme.onTertiaryContainer
         PlayerStatus.COMPLETED -> MaterialTheme.colorScheme.onPrimaryContainer
+    }
+}
+
+@Preview
+@Composable
+fun PreviewPlayerItem() {
+    PlayerItem(
+        player = GamePlayer(id = 1, gameId = 1, jerseyNumber = "10", count = 23, isAbsent = false),
+        enabled = true,
+        onSelectPlayerClick = { }) {
     }
 }

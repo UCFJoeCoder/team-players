@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ucfjoe.teamplayers.domain.model.Team
@@ -57,7 +58,7 @@ fun TeamItem(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(Modifier.weight(.90f)) {
+            Column(Modifier.fillMaxWidth(.9f)) {
                 Text(
                     team.name,
                     style = MaterialTheme.typography.bodyLarge.copy(
@@ -67,7 +68,7 @@ fun TeamItem(
                     )
                 )
             }
-            Column(Modifier.weight(.10f), horizontalAlignment = Alignment.End) {
+            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End) {
                 when {
                     isEditMode -> {
                         Icon(
@@ -85,7 +86,7 @@ fun TeamItem(
         openConfirmDialog.value -> {
             ConfirmDialog(
                 dialogTitle = "Delete ${team.name}?",
-                dialogText = "Delete the ${team.name} team and all of its related data.?\n\n" +
+                dialogText = "Delete the ${team.name} team and all of its related data?\n\n" +
                         "This action cannot be undone!",
                 onDismissRequest = { openConfirmDialog.value = false },
                 onConfirmRequest = {
@@ -96,4 +97,10 @@ fun TeamItem(
             )
         }
     }
+}
+
+@Preview
+@Composable
+fun PreviewTeamItem() {
+    TeamItem(team = Team(id = 1, name = "Knights"), onEvent = {}, isEditMode = true)
 }

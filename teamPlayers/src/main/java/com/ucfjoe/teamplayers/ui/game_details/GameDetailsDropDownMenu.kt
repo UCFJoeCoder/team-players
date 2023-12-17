@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.ucfjoe.teamplayers.R
 
 @Composable
@@ -50,7 +51,7 @@ fun GameDetailsDropDownMenu(
         DropdownMenuItem(
             text = {
                 Text(
-                    text = "Completed Game",
+                    text = "Complete Game",
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             },
@@ -72,7 +73,7 @@ fun GameDetailsDropDownMenu(
             },
             onClick = {
                 onEvent(GameDetailsEvent.OnDismissPopupMenu)
-                onEvent(GameDetailsEvent.OnShareGameData)
+                onEvent(GameDetailsEvent.OnShareGameDataRequest)
             },
             leadingIcon = {
                 Icon(imageVector = Icons.Default.Share, contentDescription = "Share game results")

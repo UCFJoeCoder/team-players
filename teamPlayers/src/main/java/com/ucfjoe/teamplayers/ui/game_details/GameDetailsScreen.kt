@@ -187,8 +187,8 @@ fun GameDetailsScreen(
                 if (gameDetailsState.game?.isCompleted == true) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                         Text(
-                            text="Game Completed!",
-                            style=MaterialTheme.typography.headlineMedium,
+                            text = "Game Completed!",
+                            style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -224,8 +224,8 @@ fun GameDetailsDialogs(
         ConfirmDialog(
             dialogTitle = "Import Players",
             dialogText = "A change in players was detected. Would you like to import the Team players to this game?\n\n" +
-                    "If you proceed, all current players will be removed from this game.\n\n" +
-                    "All the current players of the team will be imported.",
+                    "NOTE: ALL CURRENT NUMBER OF PLAYS WILL BE LOST.\n\n" +
+                    "If you proceed, the game data will be wiped and the current team players will be imported.",
             onConfirmRequest = {
                 onEvent(GameDetailsEvent.OnDismissImportDialog)
                 onEvent(GameDetailsEvent.OnImportPlayers)
@@ -247,8 +247,10 @@ fun GameDetailsDialogs(
     if (gameDetailsState.showShareGameDetailsDialog) {
         ConfirmDialog(
             dialogTitle = "Share Game Results",
-            dialogText = "This feature is not implemented yet",
-            onConfirmRequest = { onEvent(GameDetailsEvent.OnDismissShareGameResultsDialog) },
+            dialogText = "The current game is not marked as complete.\n\n" +
+                    "By sharing the data, the game will be completed to prevent further updates.\n\n" +
+                    "This can be undone from the menu.",
+            onConfirmRequest = { onEvent(GameDetailsEvent.OnConfirmShareGameResults) },
             onDismissRequest = { onEvent(GameDetailsEvent.OnDismissShareGameResultsDialog) })
     }
     if (gameDetailsState.showRequestClearCountDialog) {

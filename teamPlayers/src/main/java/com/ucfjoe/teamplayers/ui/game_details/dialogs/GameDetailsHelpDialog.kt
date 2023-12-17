@@ -12,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
@@ -32,7 +33,7 @@ import com.ucfjoe.teamplayers.R
 
 @Preview
 @Composable
-fun GameDetailsHelpDialog(){
+fun GameDetailsHelpDialog() {
     GameDetailsHelpDialog({})
 }
 
@@ -66,7 +67,8 @@ fun GameDetailsHelpDialog(
                 ) {
                     Text(
                         "Clicking on a player selects them and includes them in the current " +
-                                "play. Select as many players as you want.",
+                                "play. Select as many players as you want.\r\n\r\nLong press on a " +
+                                "player in order to edit that specific player.",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(6.dp)) {
@@ -122,27 +124,10 @@ fun GameDetailsHelpDialog(
                     Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(6.dp)) {
                         Column(Modifier.fillMaxWidth(.4f)) {
                             Icon(
-                                painter = painterResource(R.drawable.system_update_alt_fill_24),
-                                contentDescription = "Import players from team"
-                            )
-                            Text("Import Players from Team")
-                        }
-                        Column {
-                            Text(
-                                "Removes all players and counts from the game and imports the " +
-                                        "current team players.",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-                    Divider(color = MaterialTheme.colorScheme.secondaryContainer)
-                    Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(6.dp)) {
-                        Column(Modifier.fillMaxWidth(.4f)) {
-                            Icon(
                                 painter = painterResource(R.drawable.replay_fill_24),
                                 contentDescription = "Reset all player's number of plays to zero"
                             )
-                            Text("Reset Counts to Zero")
+                            Text("Reset Plays to Zero")
                         }
                         Column {
                             Text(
@@ -154,7 +139,26 @@ fun GameDetailsHelpDialog(
                     Divider(color = MaterialTheme.colorScheme.secondaryContainer)
                     Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(6.dp)) {
                         Column(Modifier.fillMaxWidth(.4f)) {
-                            Icon(imageVector = Icons.Default.Share, contentDescription = "Share game results")
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "Complete Game"
+                            )
+                            Text("Complete Game")
+                        }
+                        Column {
+                            Text(
+                                "Locks a game so no further edits can be made.",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                    Divider(color = MaterialTheme.colorScheme.secondaryContainer)
+                    Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(6.dp)) {
+                        Column(Modifier.fillMaxWidth(.4f)) {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = "Share game results"
+                            )
                             Text("Share Game Results")
                         }
                         Column(Modifier.fillMaxWidth()) {
@@ -165,9 +169,9 @@ fun GameDetailsHelpDialog(
                         }
                     }
                     Text(
-                        "Game players can be imported from the team and can be different from " +
-                                "the team's players. This is because players could have joined or " +
-                                "left a team, but might have still participated in a game.",
+                        "Game players and Team players can be different. This allows players " +
+                                "to be added or removed from a team without changing the players " +
+                                "that participated in a game.",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
