@@ -1,5 +1,6 @@
 package com.ucfjoe.teamplayers.ui
 
+import android.content.Intent
 import android.widget.Toast
 
 sealed class UiEvent {
@@ -12,5 +13,10 @@ sealed class UiEvent {
     data class ShowSnackbar(
         val message: String,
         val action: String? = null
+    ) : UiEvent()
+
+    data class StartActivity(
+        val intent: Intent,
+        val attachmentFileName: String? = null
     ) : UiEvent()
 }

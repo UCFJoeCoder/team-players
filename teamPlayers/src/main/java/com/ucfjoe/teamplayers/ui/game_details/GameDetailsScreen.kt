@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -89,48 +90,7 @@ fun GameDetailsScreen(
         }
     })
 
-    if (gameDetailsState.showImportCurrentPlayerDialog) {
-        ConfirmDialog(
-            dialogTitle = "Import Players",
-            dialogText = getRequestImportPlayersMessage(),
-            onConfirmRequest = {
-                onEvent(GameDetailsEvent.OnDismissImportDialog)
-                onEvent(GameDetailsEvent.OnImportPlayers)
-            },
-            onDismissRequest = { onEvent(GameDetailsEvent.OnDismissImportDialog) },
-            icon = if (gameDetailsState.players.isNotEmpty()) Icons.Default.Warning else null
-        )
-    }
-    if (gameDetailsState.showShareGameDetailsDialog) {
-        ConfirmDialog(
-            dialogTitle = "Share Game Results",
-            dialogText = "This feature is not implemented yet",
-            onConfirmRequest = { onEvent(GameDetailsEvent.OnHideShareGameResultsDialog) },
-            onDismissRequest = { onEvent(GameDetailsEvent.OnHideShareGameResultsDialog) })
-    }
-    if (gameDetailsState.showRequestClearCountDialog) {
-        ConfirmDialog(
-            dialogTitle = "Set Plays to Zero",
-            dialogText = "Press Confirm to set all the number of plays to zero.",
-            onConfirmRequest = {
-                onEvent(GameDetailsEvent.OnHideResetCountDialog)
-                onEvent(GameDetailsEvent.OnResetCountsToZero)
-            },
-            onDismissRequest = { onEvent(GameDetailsEvent.OnHideResetCountDialog) })
-    }
-    if (gameDetailsState.showHelpDialog) {
-        GameDetailsHelpDialog(onDismissRequest = { onEvent(GameDetailsEvent.OnHideHelpDialog) })
-    }
-    if (gameDetailsState.showEditPlayerDialog) {
-        EditPlayerDialog(
-            onDismissRequest = { onEvent(GameDetailsEvent.OnHideEditPlayerDialog) },
-            onConfirmRequest = { editPlayer ->
-                onEvent(GameDetailsEvent.OnProcessEditPlayerRequest(editPlayer))
-            },
-            editPlayer = gameDetailsState.editPlayer!!,
-            errorMessage = gameDetailsState.editErrorMessage
-        )
-    }
+    GameDetailsDialogs(gameDetailsState = gameDetailsState, onEvent = onEvent)
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -167,6 +127,7 @@ fun GameDetailsScreen(
                         )
                     }
                     GameDetailsDropDownMenu(
+                        isGameCompleted = gameDetailsState.game?.isCompleted ?: false,
                         showDropDownMenu = gameDetailsState.showPopupMenu,
                         onEvent = onEvent
                     )
@@ -199,21 +160,37 @@ fun GameDetailsScreen(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     OutlinedButton(
-                        onClick = { onEvent(GameDetailsEvent.OnCancelSelectionClick) }
+                        onClick = { onEvent(GameDetailsEvent.OnCancelSelectionClick) },
+                        enabled = gameDetailsState.game?.isCompleted?.not() ?: true
                     ) {
                         Icon(Icons.Default.Clear, contentDescription = "Clear Selection")
                         Text(text = "Clear")
                     }
-                    OutlinedButton(onClick = { onEvent(GameDetailsEvent.OnRepeatSelectionClick) }) {
+                    OutlinedButton(
+                        onClick = { onEvent(GameDetailsEvent.OnRepeatSelectionClick) },
+                        enabled = gameDetailsState.game?.isCompleted?.not() ?: true
+                    ) {
                         Icon(
                             painter = painterResource(R.drawable.repeat_fill_24),
                             contentDescription = "Repeat Selection"
                         )
                         Text(text = "Repeat")
                     }
-                    Button(onClick = { onEvent(GameDetailsEvent.OnIncrementSelectionClick) }) {
+                    Button(
+                        onClick = { onEvent(GameDetailsEvent.OnIncrementSelectionClick) },
+                        enabled = gameDetailsState.game?.isCompleted?.not() ?: true
+                    ) {
                         Icon(Icons.Default.Add, contentDescription = "Increment Selection")
                         Text(text = "Add")
+                    }
+                }
+                if (gameDetailsState.game?.isCompleted == true) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                        Text(
+                            text="Game Completed!",
+                            style=MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
                 LazyVerticalGrid(
@@ -222,6 +199,7 @@ fun GameDetailsScreen(
                         items(gameDetailsState.players) { player ->
                             PlayerItem(
                                 player = player,
+                                enabled = gameDetailsState.game?.isCompleted?.not() ?: true,
                                 onSelectPlayerClick = {
                                     onEvent(GameDetailsEvent.OnSelectPlayerClick(player))
                                 },
@@ -237,13 +215,72 @@ fun GameDetailsScreen(
     }
 }
 
-//fun getRequestImportPlayersMessage(playersHaveChanged: Boolean): String {
-fun getRequestImportPlayersMessage(): String {
-    return "A change in players was detected. Would you like to import the Team players to this game?\n\n" +
-            "If you proceed, all current players will be removed from this game.\n\n" +
-            "All the current players of the team will be imported."
-//    else
-//        "If you proceed, all current players will be removed from this game.\n\nAll the current players of the team will be imported."
+@Composable
+fun GameDetailsDialogs(
+    gameDetailsState: GameDetailsState,
+    onEvent: (GameDetailsEvent) -> Unit
+) {
+    if (gameDetailsState.showImportCurrentPlayerDialog) {
+        ConfirmDialog(
+            dialogTitle = "Import Players",
+            dialogText = "A change in players was detected. Would you like to import the Team players to this game?\n\n" +
+                    "If you proceed, all current players will be removed from this game.\n\n" +
+                    "All the current players of the team will be imported.",
+            onConfirmRequest = {
+                onEvent(GameDetailsEvent.OnDismissImportDialog)
+                onEvent(GameDetailsEvent.OnImportPlayers)
+            },
+            onDismissRequest = { onEvent(GameDetailsEvent.OnDismissImportDialog) },
+            icon = if (gameDetailsState.players.isNotEmpty()) Icons.Default.Warning else null
+        )
+    }
+    if (gameDetailsState.showCompleteGameDialog) {
+        ConfirmDialog(
+            dialogTitle = "Mark Game as Completed",
+            dialogText = getCompletedGameMessage(gameDetailsState.game?.isCompleted ?: false),
+            onConfirmRequest = {
+                onEvent(GameDetailsEvent.OnDismissCompleteGameDialog)
+                onEvent(GameDetailsEvent.OnChangeGameCompletedState(!gameDetailsState.game!!.isCompleted))
+            },
+            onDismissRequest = { onEvent(GameDetailsEvent.OnDismissCompleteGameDialog) })
+    }
+    if (gameDetailsState.showShareGameDetailsDialog) {
+        ConfirmDialog(
+            dialogTitle = "Share Game Results",
+            dialogText = "This feature is not implemented yet",
+            onConfirmRequest = { onEvent(GameDetailsEvent.OnDismissShareGameResultsDialog) },
+            onDismissRequest = { onEvent(GameDetailsEvent.OnDismissShareGameResultsDialog) })
+    }
+    if (gameDetailsState.showRequestClearCountDialog) {
+        ConfirmDialog(
+            dialogTitle = "Set Plays to Zero",
+            dialogText = "Press Confirm to set all the number of plays to zero.",
+            onConfirmRequest = {
+                onEvent(GameDetailsEvent.OnDismissResetCountDialog)
+                onEvent(GameDetailsEvent.OnResetCountsToZero)
+            },
+            onDismissRequest = { onEvent(GameDetailsEvent.OnDismissResetCountDialog) })
+    }
+    if (gameDetailsState.showHelpDialog) {
+        GameDetailsHelpDialog(onDismissRequest = { onEvent(GameDetailsEvent.OnDismissHelpDialog) })
+    }
+    if (gameDetailsState.showEditPlayerDialog) {
+        EditPlayerDialog(
+            onDismissRequest = { onEvent(GameDetailsEvent.OnHideEditPlayerDialog) },
+            onConfirmRequest = { editPlayer ->
+                onEvent(GameDetailsEvent.OnProcessEditPlayerRequest(editPlayer))
+            },
+            editPlayer = gameDetailsState.editPlayer!!,
+            errorMessage = gameDetailsState.editErrorMessage
+        )
+    }
+}
+
+fun getCompletedGameMessage(completed: Boolean): String {
+    return if (completed)
+        "The game is currently marked as completed. Would you like to undo this to make updates?"
+    else
+        "Set the game as completed? No further updates will be allowed."
 }
 
 @Preview(showBackground = true)

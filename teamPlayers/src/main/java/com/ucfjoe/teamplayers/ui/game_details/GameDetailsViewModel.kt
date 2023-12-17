@@ -1,5 +1,6 @@
 package com.ucfjoe.teamplayers.ui.game_details
 
+import android.net.Uri
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -148,11 +149,11 @@ class GameDetailsViewModel @Inject constructor(
                         is Resource.Success -> {
                             lastPlayersSelected.clear()
                             lastPlayersSelected.addAll(selectedIds)
-                            _state.value = state.value.copy(players = result.data!!)
+                            _state.value = state.value.copy(players = result.data)
                         }
 
                         is Resource.Error -> {
-                            sendUiEvent(UiEvent.ShowToast(message = result.message!!))
+                            sendUiEvent(UiEvent.ShowToast(message = result.message))
                         }
                     }
                 }
@@ -185,7 +186,7 @@ class GameDetailsViewModel @Inject constructor(
                 _state.value = state.value.copy(showPopupMenu = true)
             }
 
-            GameDetailsEvent.OnHidePopupMenu -> {
+            GameDetailsEvent.OnDismissPopupMenu -> {
                 _state.value = state.value.copy(showPopupMenu = false)
             }
 
@@ -193,15 +194,19 @@ class GameDetailsViewModel @Inject constructor(
                 _state.value = state.value.copy(showShareGameDetailsDialog = true)
             }
 
-            GameDetailsEvent.OnHideShareGameResultsDialog -> {
+            GameDetailsEvent.OnDismissShareGameResultsDialog -> {
                 _state.value = state.value.copy(showShareGameDetailsDialog = false)
+            }
+
+            GameDetailsEvent.OnShareGameData -> {
+                shareGameData()
             }
 
             GameDetailsEvent.OnShowHelpDialog -> {
                 _state.value = state.value.copy(showHelpDialog = true)
             }
 
-            GameDetailsEvent.OnHideHelpDialog -> {
+            GameDetailsEvent.OnDismissHelpDialog -> {
                 _state.value = state.value.copy(showHelpDialog = false)
             }
 
@@ -209,9 +214,79 @@ class GameDetailsViewModel @Inject constructor(
                 _state.value = state.value.copy(showRequestClearCountDialog = true)
             }
 
-            GameDetailsEvent.OnHideResetCountDialog -> {
+            GameDetailsEvent.OnDismissResetCountDialog -> {
                 _state.value = state.value.copy(showRequestClearCountDialog = false)
             }
+
+            GameDetailsEvent.OnShowCompleteGameDialog -> {
+                _state.value = state.value.copy(showCompleteGameDialog = true)
+            }
+
+            GameDetailsEvent.OnDismissCompleteGameDialog -> {
+                _state.value = state.value.copy(showCompleteGameDialog = false)
+            }
+
+            is GameDetailsEvent.OnChangeGameCompletedState -> {
+                processSetGameCompletedState(event.isCompleted)
+            }
+
+            GameDetailsEvent.OnStartActivityError -> {
+                _state.value =
+                    state.value.copy(
+                        emailErrorMessage = "Failed to send email. Either there is " +
+                                "no Email App on this device or another error occurred."
+                    )
+            }
+        }
+    }
+
+    private fun shareGameData() {
+        // TODO Determine if the game needs to be in a completed state or should be switched to a completed state with this action
+        // Should this only be allowed when the game is completed?
+        // Should this auto set the game as completed?
+        // Should this tell the user, in a dialog, that by continuing this action will mark the game as completed?
+
+        val team = state.value.team
+        val game = state.value.game
+        val players = state.value.players
+        if (team == null || game == null || players.isEmpty()) {
+            return
+        }
+
+        var uri = ""
+        viewModelScope.launch {
+            when (val result =
+                gameDetailsUseCases.writeFileRepository.writeFile(team, game, players)) {
+                is Resource.Success -> {
+                    println("Joey Uri ${result.data}")
+                    uri = result.data
+                }
+
+                is Resource.Error -> {
+                    println("Joey ERROR ${result.message}")
+                    _state.value = state.value.copy(emailErrorMessage = result.message)
+                    return@launch
+                }
+            }
+        }
+
+        when (val result = gameDetailsUseCases.sendGameEmailUseCase(
+            team.name,
+            game.gameDateTime,
+            Uri.parse(uri)
+        )) {
+            is Resource.Success -> Unit
+
+            is Resource.Error -> {
+                _state.value = state.value.copy(emailErrorMessage = result.message)
+            }
+        }
+    }
+
+    private fun processSetGameCompletedState(isCompleted: Boolean) {
+        viewModelScope.launch {
+            val game = state.value.game!!.copy(isCompleted = isCompleted)
+            gameDetailsUseCases.updateGameUseCase(game)
         }
     }
 

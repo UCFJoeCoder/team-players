@@ -37,7 +37,7 @@ data class GamePlayer(
         val otherJerseyIsNumber = other.jerseyNumber.toIntOrNull() != null
 
         return when {
-            isAbsent != other.isSelected -> {
+            isAbsent != other.isAbsent -> {
                 if (isAbsent) 1 else -1
             }
             selfJerseyIsNumber != otherJerseyIsNumber -> {

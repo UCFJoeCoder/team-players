@@ -14,6 +14,8 @@ data class GameDetailsState(
     val showShareGameDetailsDialog: Boolean = false,
     val showRequestClearCountDialog: Boolean = false,
     val showEditPlayerDialog: Boolean = false,
+    val showCompleteGameDialog: Boolean = false,
     val editPlayer: GamePlayer? = null,
-    val editErrorMessage: String? = null
+    val editErrorMessage: String? = null,
+    val emailErrorMessage: String? = null
 )

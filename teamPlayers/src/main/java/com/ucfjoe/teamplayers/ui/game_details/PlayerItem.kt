@@ -21,6 +21,7 @@ import com.ucfjoe.teamplayers.domain.model.PlayerStatus
 @Composable
 fun PlayerItem(
     player: GamePlayer,
+    enabled: Boolean,
     onSelectPlayerClick: () -> Unit,
     onEditPlayerClick: () -> Unit
 ) {
@@ -29,11 +30,12 @@ fun PlayerItem(
             .padding(6.dp)
             .combinedClickable(
                 onClick = { onSelectPlayerClick() },
-                onLongClick = { onEditPlayerClick() }
+                onLongClick = { onEditPlayerClick() },
+                enabled = enabled
             ),
         colors = CardDefaults.cardColors(
-            containerColor = getContainerColor(player.getStatus()),
-            contentColor = getContentColor(player.getStatus())
+            containerColor = getContainerColor(player.getStatus()).conditional(!enabled, { this.copy(alpha = .38f) }),
+            contentColor = getContentColor(player.getStatus()).conditional(!enabled, { this.copy(alpha = .38f) })
         )
     ) {
         Column(
@@ -48,6 +50,17 @@ fun PlayerItem(
         }
     }
 }
+
+inline fun Color.conditional(
+    condition: Boolean,
+    ifTrue: Color.() -> Color,
+    ifFalse: Color.() -> Color = { this }
+): Color = if (condition) {
+    ifTrue(this)
+} else {
+    ifFalse(this)
+}
+
 
 @Composable
 private fun getContainerColor(playerStatus: PlayerStatus): Color {
